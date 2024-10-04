@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Event {
   title: string;
@@ -10,13 +10,23 @@ interface Event {
 interface EventFormProps {
   onSave: (event: Event) => void;
   onClose: () => void;
+  initialData?: Partial<Event>; // initial data (optional)
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onSave, onClose }) => {
-  const [title, setTitle] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
-  const [start, setStart] = useState<string>('');
-  const [end, setEnd] = useState<string>(''); 
+const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) => {
+  const [title, setTitle] = useState<string>(initialData?.title || '');
+  const [description, setDescription] = useState<string>(initialData?.description || '');
+  const [start, setStart] = useState<string>(initialData?.start || '');
+  const [end, setEnd] = useState<string>(initialData?.end || '');
+
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title || '');
+      setDescription(initialData.description || '');
+      setStart(initialData.start || '');
+      setEnd(initialData.end || '');
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +40,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose }) => {
         onSubmit={handleSubmit}
         className="bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md space-y-6 text-white"
       >
-        <h2 className="text-2xl font-bold mb-4">Add New Event</h2>
+        <h2 className="text-2xl font-semibold mb-4">{initialData ? 'Edit Event' : 'Add New Event'}</h2>
 
         <div className="flex flex-col space-y-2">
           <label className="text-gray-300 font-medium">Title:</label>
@@ -38,7 +48,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose }) => {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             placeholder="Enter event title"
           />
         </div>
@@ -48,7 +58,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose }) => {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             placeholder="Enter event description"
             rows={3}
           />
@@ -60,7 +70,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose }) => {
             type="datetime-local"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
           />
         </div>
 
@@ -68,9 +78,9 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose }) => {
           <label className="text-gray-300 font-medium">End Date:</label>
           <input
             type="datetime-local"
-            value={end} 
+            value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
           />
         </div>
 
@@ -78,13 +88,13 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-gray-600 text-gray-200 rounded hover:bg-gray-500 transition duration-200"
+            className="px-4 py-2 bg-gray-600 text-gray-200 rounded-lg hover:bg-gray-500 transition duration-200"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition duration-200"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition duration-200"
           >
             Save
           </button>
