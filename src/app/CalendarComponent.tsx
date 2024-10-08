@@ -74,10 +74,13 @@ const CalendarComponent = () => {
           initialData={editEvent ? {
             title: editEvent.title,
             description: editEvent.extendedProps.description,
-            // Format start and end for datetime-local input.. a little bit of math for sure.
             start: new Date(editEvent.start.getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
             end: editEvent.end ? new Date(editEvent.end.getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''
-          } : slotInfo} 
+          } : slotInfo ? {
+            start: new Date(new Date(slotInfo.start).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
+            end: slotInfo.end ? new Date(new Date(slotInfo.end).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''
+          } : undefined}
+                    
         />
       )}
 
