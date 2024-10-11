@@ -1,6 +1,7 @@
 import FullCalendar from '@fullcalendar/react';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import dayGridPlugin from '@fullcalendar/daygrid'; // Month view
+import timeGridPlugin from '@fullcalendar/timegrid'; // Week and Day views
+import interactionPlugin from '@fullcalendar/interaction'; // Allows interaction (e.g., event clicking)
 import { useState } from 'react';
 import EventForm from './EventForm';
 
@@ -129,8 +130,13 @@ const CalendarComponent = () => {
       )}
 
       <FullCalendar
-        plugins={[timeGridPlugin, interactionPlugin]}
-        initialView="timeGridWeek"
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth" // Default view is Month
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay', // Allows switching between Month, Week, and Day views
+        }}
         events={events}
         editable={true}
         selectable={!showEventForm} // disable selecting new events while form is open
