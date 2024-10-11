@@ -2,9 +2,9 @@
 "use client";
 
 import type { NextPage } from 'next';
-import CalendarComponent from './CalendarComponent';
+import CalendarComponent from './components/CalendarComponent';
 import { useState } from 'react';
-import EventForm from './EventForm';
+import EventForm from './components/EventForm';
 
 const Home: NextPage = () => {
   const [events, setEvents] = useState<any[]>([]);  

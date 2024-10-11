@@ -1,15 +1,19 @@
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import EventForm from './EventForm';
+import LoginPage from '../auth/login/page';
+import {createClient} from '@/utils/supabase/client';
 
 const CalendarComponent = () => {
+  const supabase = createClient();
   const [events, setEvents] = useState<any[]>([]);
   const [showEventForm, setShowEventForm] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [editEvent, setEditEvent] = useState<any>(null);
   const [slotInfo, setSlotInfo] = useState<any>(null);
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);  
 
   const handleSaveEvent = (newEvent: any) => {
     if (editEvent) {
@@ -61,6 +65,14 @@ const CalendarComponent = () => {
           onClick={() => setShowEventForm(true)}
         >
           + Add Event
+        </button>
+      </div>
+      <div className="absolute top-0 right-5">
+        <button
+          className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out"
+          onClick={() => setShowLoginModal(true)}
+        >
+          Login
         </button>
       </div>
 
@@ -128,12 +140,28 @@ const CalendarComponent = () => {
         </div>
       )}
 
+      {showLoginModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
+          <div className="bg-gray-900 rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
+            <LoginPage />
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="mt-4 w-full px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition duration-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+
+
       <FullCalendar
         plugins={[timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
         events={events}
         editable={true}
-        selectable={!showEventForm} // disable selecting new events while form is open
+        selectable={!showEventForm} 
         select={(info) => {
           setSlotInfo({
             start: info.startStr,
