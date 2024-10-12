@@ -1,6 +1,9 @@
 'use client';
 import { login, signup, googleAuth, forgotPassword } from './actions';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation'; 
+import { createClient } from '@/utils/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,35 +13,71 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState(''); 
   const [isSignup, setIsSignup] = useState(false); 
   const [errorMessage, setErrorMessage] = useState(''); 
+  const router = useRouter();
+  const supabase = createClient();
+
+  const [session, setSession] = useState<Session | null>(null); 
+  const [loading, setLoading] = useState(true); 
+
+  // checks if user is already logged in, better maybe to find a better fix instead of useeffect
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        setSession(sessionData.session);
+      }
+      setLoading(false); // Done loading
+    };
+
+    checkSession();
+  }, [supabase]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null); // Clear session, & redirect after login
+    router.push('/');
+  };
+
+  if (loading) {
+    return <div>Loading...</div>; 
+  }
+
+  if (session) {
+    return (
+      <div className="text-center">
+        <h2 className="text-3xl font-bold">You're already logged in</h2>
+        <p className="mb-4">Would you like to log out?</p>
+        <button
+          onClick={handleLogout}
+          className="w-full sm:w-auto bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-md transition duration-200"
+        >
+          Logout
+        </button>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
     setErrorMessage('');
-  
+
     if (isSignup) {
       if (password !== confirmPassword) {
         setErrorMessage("Passwords do not match!");
-        return; 
+        return;
       }
-      if (password.length < 6) {
-        setErrorMessage("Password should be at least 6 characters!");
-        return; 
-      }
-  
+
       const formData = new FormData(e.target as HTMLFormElement);
       formData.append('email', email);
       formData.append('password', password);
-      formData.append('name', name); 
+      formData.append('name', name);
       formData.append('bio', bio);   
-      formData.append('avatar_url', ''); 
-      
-      await signup(formData);  
+
+      await signup(formData);
     } else {
-      await login(new FormData(e.target as HTMLFormElement)); 
+      await login(new FormData(e.target as HTMLFormElement));
     }
   };
-  
 
   const handleGoogleAuth = async () => {
     try {
@@ -53,15 +92,12 @@ export default function LoginPage() {
   };
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
-      <h2 className="text-3xl font-bold text-center mb-6">{isSignup ? 'Sign Up' : 'Log In'}</h2>
+    <form className="space-y-6 bg-neutral-950 p-6 rounded-lg shadow-lg max-w-md mx-auto">
+      <h2 className="text-3xl font-bold text-center mb-6 text-white">{isSignup ? 'Sign Up' : 'Log In'}</h2>
 
-      {/* Name Input - only for Signup */}
       {isSignup && (
         <div className="form-group">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-400">
-            Name:
-          </label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-300">Name:</label>
           <input
             id="name"
             name="name"
@@ -69,16 +105,13 @@ export default function LoginPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-gray-400 focus:border-gray-500"
+            className="mt-1 block w-full p-2 bg-gray-800 border border-gray-500 rounded-md text-white"
           />
         </div>
       )}
 
-      {/* Email Input */}
       <div className="form-group">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-400">
-          Email:
-        </label>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email:</label>
         <input
           id="email"
           name="email"
@@ -86,15 +119,12 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-gray-400 focus:border-gray-500"
+          className="mt-1 block w-full p-2 bg-gray-800 border border-gray-500 rounded-md text-white"
         />
       </div>
 
-      {/* Password Input */}
       <div className="form-group">
-        <label htmlFor="password" className="block text-sm font-medium text-gray-400">
-          Password:
-        </label>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-300">Password:</label>
         <input
           id="password"
           name="password"
@@ -102,16 +132,13 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-gray-400 focus:border-gray-500"
+          className="mt-1 block w-full p-2 bg-gray-800 border border-gray-500 rounded-md text-white"
         />
       </div>
 
-      {/* Confirm Password - only for Signup */}
       {isSignup && (
         <div className="form-group">
-          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-400">
-            Confirm Password:
-          </label>
+          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">Confirm Password:</label>
           <input
             id="confirm-password"
             name="confirm-password"
@@ -119,52 +146,42 @@ export default function LoginPage() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-gray-400 focus:border-gray-500"
+            className="mt-1 block w-full p-2 bg-gray-800 border border-gray-500 rounded-md text-white"
           />
-          
-          {/* Error Message for Password Mismatch */}
-          {errorMessage && (
-            <p className="mt-2 text-sm text-red-500 font-medium">{errorMessage}</p>
-          )}
+          {errorMessage && <p className="mt-2 text-sm text-red-500 font-medium">{errorMessage}</p>}
         </div>
       )}
 
-      {/* Login & Signup Buttons */}
       <div className="flex justify-between items-center">
-        <button
-          type="submit"
-          className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md transition duration-200"
-        >
+        <button type="submit" className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-md transition duration-200">
           {isSignup ? 'Sign Up' : 'Log In'}
         </button>
         <button
           type="button"
-          onClick={() => setIsSignup(!isSignup)} // Toggle between login and signup
+          onClick={() => setIsSignup(!isSignup)}
           className="w-full sm:w-auto mt-4 sm:mt-0 sm:ml-2 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md transition duration-200"
         >
           {isSignup ? 'Switch to Log In' : 'Switch to Sign Up'}
         </button>
       </div>
 
-      {/* Forgot Password - only show for login */}
       {!isSignup && (
         <div className="text-center mt-4">
           <button
             type="button"
             onClick={handleForgotPassword}
-            className="text-sm text-gray-400 hover:text-gray-200 transition duration-200"
+            className="text-sm text-gray-400 hover:text-gray-300 transition duration-200"
           >
             Forgot Password?
           </button>
         </div>
       )}
 
-      {/* Google Authentication */}
       <div className="text-center mt-6">
         <button
           type="button"
           onClick={handleGoogleAuth}
-          className="bg-gray-800 hover:bg-red-600 text-white py-2 px-4 rounded-md w-full flex items-center justify-center transition duration-200"
+          className="bg-gray-700 hover:bg-red-600 text-white py-2 px-4 rounded-md w-full flex items-center justify-center transition duration-200"
         >
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"

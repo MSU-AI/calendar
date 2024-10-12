@@ -38,7 +38,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
       <form
         onSubmit={handleSubmit}
-        className="bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md space-y-6 text-white"
+        className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md space-y-6 text-white"
       >
         <h2 className="text-2xl font-semibold mb-4">{initialData ? 'Edit Event' : 'Add New Event'}</h2>
 
@@ -48,7 +48,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
             placeholder="Enter event title"
           />
         </div>
@@ -58,7 +58,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
             placeholder="Enter event description"
             rows={3}
           />
@@ -70,7 +70,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             type="datetime-local"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
           />
         </div>
 
@@ -80,10 +80,77 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             type="datetime-local"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
           />
         </div>
 
+        <div className="flex justify-end space-x-4 mt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-600 text-gray-200 rounded-lg hover:bg-gray-500 transition duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition duration-200"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+
+      {/* Fully dark theme, however would require switching calendar picker to a different color */}
+          {/*
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md space-y-6 text-white"
+      >
+        <h2 className="text-2xl font-semibold mb-4">{initialData ? 'Edit Event' : 'Add New Event'}</h2>
+
+        <div className="flex flex-col space-y-2">
+          <label className="text-gray-300 font-medium">Title:</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="px-4 py-2 bg-neutral-950 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+            placeholder="Enter event title"
+          />
+        </div>
+
+        <div className="flex flex-col space-y-2">
+          <label className="text-gray-300 font-medium">Description:</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="px-4 py-2 bg-neutral-950 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+            placeholder="Enter event description"
+            rows={3}
+          />
+        </div>
+
+        <div className="flex flex-col space-y-2">
+          <label className="text-gray-300 font-medium">Start Date:</label>
+          <input
+            type="datetime-local"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            className="px-4 py-2 bg-neutral-950 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+          />
+        </div>
+
+        <div className="flex flex-col space-y-2">
+          <label className="text-gray-300 font-medium">End Date:</label>
+          <input
+            type="datetime-local"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            className="px-4 py-2 bg-neutral-950 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+          />
+        </div>
 
         <div className="flex justify-end space-x-4 mt-4">
           <button
@@ -102,6 +169,9 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
         </div>
       </form>
     </div>
+    */}
+    </div>
+
   );
 };
 
