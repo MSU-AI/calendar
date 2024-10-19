@@ -7,6 +7,7 @@ import EventForm from './EventForm';
 import LoginPage from '../auth/login/page';
 import {createClient} from '@/utils/supabase/client';
 import { Session } from '@supabase/supabase-js';
+import './CalendarComponent.css';
 
 const CalendarComponent = () => {
   const supabase = createClient();
@@ -83,6 +84,7 @@ const CalendarComponent = () => {
   <div className="relative">
     <div className="flex items-center justify-between mb-4">
         <div className="absolute top-0 right-0 flex items-center space-x-4 mt-4 mr-4">
+          
           {session ? (
             <>
               <div className="flex items-center space-x-2">
@@ -104,6 +106,7 @@ const CalendarComponent = () => {
             </>
           ) : (
             <button
+              id='login-button'
               className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
               onClick={() => setShowLoginModal(true)}
             >
@@ -114,12 +117,14 @@ const CalendarComponent = () => {
       </div>
 
       <div className="flex items-center space-x-4 mb-4">
-        <button
+      
+        <button id='add-event-button'
           className="px-6 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-300 ease-in-out"
           onClick={() => setShowEventForm(true)}
         >
-          + Add Event
+          + Add 
         </button>
+        <h1 id = "logo-bold-ui" className="mt-2 text-2xl font-bold">Almanac</h1>
       </div>
 
       {showEventForm && (
@@ -228,7 +233,7 @@ const CalendarComponent = () => {
       )}
 
 
-      <div className = 'pt-3'>
+      <div id='calendar-class-ui' className = 'pt-3'>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth" // Default view is Month

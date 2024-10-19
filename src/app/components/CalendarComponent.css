@@ -1,0 +1,54 @@
+.header-container 
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+}
+
+#add-event-button 
+{
+    margin-left: 20px; 
+}
+
+#add-event-button 
+{
+    margin-left: 10px;
+    margin-right: 10px; 
+}
+
+#login-button 
+{
+    margin-left: auto; 
+}
+
+#add-event-button, #login-button 
+{
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+    font-weight: bold;
+}
+
+#logo-bold-ui 
+{
+    margin-left: 10px;
+}
+
+#calendar-class-ui 
+{
+    padding: 10px;
+}
+
+/*full calendar ui styling*/
+.fc .fc-button 
+{
+    background-color: white; 
+    color: black;            
+    border: 1px solid black; 
+    font-weight: bold;        
+    border-radius: 5px;       
+    padding: 5px 10px;        
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+  
+/*mobile view styling*/

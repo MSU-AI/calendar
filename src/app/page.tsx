@@ -15,7 +15,9 @@ const Home: NextPage = () => {
   }  
   return (
     <div>
-      <h1 className="mt-2 text-2xl font-bold">My Calendar</h1>
+      
+
+      {/*Show the event form */}
       {showEventForm && (
         <EventForm
           onSave={handleSaveEvent}
