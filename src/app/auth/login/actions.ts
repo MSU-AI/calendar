@@ -90,8 +90,8 @@ async function insertProfileWithRetry(
   for (let attempt = 1; attempt <= retries; attempt++) {
     const { error: profileInsertError } = await supabase
       .from('profiles')
-      .insert({
-        id: userId, // Use the user's ID from auth.users
+      .upsert({
+        id: userId,
         name,
         bio,
         avatar_url: avatarUrl,
@@ -118,6 +118,9 @@ export async function googleAuth() {
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`, 
+    },
   });
 
   if (error) {
