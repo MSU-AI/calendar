@@ -1,7 +1,4 @@
 
-#screen-background {
-    background: (255, 255, 255, 0.1);
-}
 
 .header-container 
 {
@@ -83,10 +80,10 @@
   
 .search-bar {
     font-weight: bold;
-    border: 1px solid rgb(49, 48, 48);
+    /*border: 1px solid rgb(25, 24, 24);*/
     border-radius: 8px;
     color: white;
-    background-color: black;
+    background-color:var(--fc-button-active-bg-color);
     width: 100%;
     max-width: 1000px;
     padding: 12px 12px 12px 45px;
@@ -105,8 +102,8 @@
     top: 100%;
     left: 0;
     width: 100%;
-    background-color: black;
-    border: 1px solid rgb(49, 48, 48);
+    background-color:var(--fc-button-active-bg-color);
+    /*border: 1px solid rgb(49, 48, 48);*/
     border-top: none; /* Remove top border */
     border-radius: 0 0 8px 8px;
     margin-top: -1px; /* Compensate for border overlap */
@@ -190,3 +187,54 @@
 #calendar-class-ui .fc-header-toolbar {
     padding: 12px;
 }
+
+/* Sidebar styling */
+.calendar-layout {
+    display: flex;
+    height: calc(100vh - 80px); /* Adjust based on header height */
+  }
+  
+  /* Sidebar styling */
+  .sidebar {
+    width: 20%; /* Sidebar takes up 20% of the screen */
+    background-color: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light gray background */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    margin: 20px;
+    color: white;
+  }
+  
+  .sidebar-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .task-item {
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .task-item:hover {
+    background-color: #e0e0e0;
+  }
+  
+  /* Calendar container styling */
+  .calendar-container {
+    width: 80%; /* Calendar takes up remaining 80% of the screen */
+    overflow: hidden;
+    padding: 10px;
+  }

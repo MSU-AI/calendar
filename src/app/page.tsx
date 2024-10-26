@@ -15,8 +15,6 @@ const Home: NextPage = () => {
   }  
   return (
     <div>
-      
-
       {/*Show the event form */}
       {showEventForm && (
         <EventForm

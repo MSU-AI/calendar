@@ -311,7 +311,31 @@ const CalendarComponent = () => {
         </div>
       )}
 
+  {/* Add the Left View to show an agenda for tasks and suggested tasks option with green check mark and x mark buttons - no mini calendar */}
 
+  {/* Calendar UI */}
+  {/* Flexbox layout with sidebar and calendar */}
+  <div className="calendar-layout">
+          {/* Sidebar for tasks */}
+          <div className="sidebar">
+            <h2 className="sidebar-title">Tasks</h2>
+            <ul className="task-list">
+              {/*tasks.map((task, index) => (
+                <li key={index} className="task-item">
+                  {task.title}
+                </li>
+              ))*/}
+            </ul>
+
+            <h2 className="sidebar-title">Suggested Tasks</h2>
+            <ul className="task-list">
+              {/*tasks.map((task, index) => (
+                <li key={index} className="task-item">
+                  {task.title}
+                </li>
+              ))*/}
+            </ul>
+          </div>
   <div className="calendar-container">
       <div id="calendar-class-ui">
         <FullCalendar
@@ -337,6 +361,7 @@ const CalendarComponent = () => {
           eventClick={(eventInfo) => setSelectedEvent(eventInfo.event)}
         />
       </div>
+    </div>
     </div>
     </div>
 
