@@ -2,7 +2,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid'; // Month view
 import timeGridPlugin from '@fullcalendar/timegrid'; // Week and Day views
 import interactionPlugin from '@fullcalendar/interaction'; // Allows interaction (e.g., event clicking)
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import EventForm from './EventForm';
 import LoginPage from '../auth/login/page';
 import {createClient} from '@/utils/supabase/client';
@@ -20,6 +20,11 @@ const CalendarComponent = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [search, setSearch] = useState(''); // Search input state
+  const [showPopup, setShowPopup] = useState(false); // Toggle popup state
+
+  const searchContainerRef = useRef<HTMLDivElement>(null); // Reference for search container
+
   useEffect(() => {
     const fetchSession = async () => {
       const { data: sessionData, error } = await supabase.auth.getSession();
@@ -30,6 +35,19 @@ const CalendarComponent = () => {
     };
 
     fetchSession();
+
+    // Close popup when clicking outside of the search container
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowPopup(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+
   }, [supabase]);
 
   const handleSaveEvent = (newEvent: any) => {
@@ -80,7 +98,21 @@ const CalendarComponent = () => {
     setShowLoginModal(false);
   };
 
+
+  // Function to handle search input change
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+  };
+
+  // Function to toggle the popup
+  const togglePopup = () => {
+    setShowPopup(!showPopup);
+  };
+
   return (
+  <div id='screen-background'>
+
+    
   <div className="relative">
     <div className="flex items-center justify-between mb-4">
         <div className="absolute top-0 right-0 flex items-center space-x-4 mt-4 mr-4">
@@ -114,9 +146,11 @@ const CalendarComponent = () => {
             </button>
           )}
         </div>
+
+        
       </div>
 
-      <div className="flex items-center space-x-4 mb-4">
+      <div className="flex items-center">
       
         <button id='add-event-button'
           className="px-6 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-300 ease-in-out"
@@ -124,8 +158,53 @@ const CalendarComponent = () => {
         >
           + Add 
         </button>
+
         <h1 id = "logo-bold-ui" className="mt-2 text-2xl font-bold">Almanac</h1>
+
+
+        <div className="search-container" ref={searchContainerRef}>
+        <span className="search-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M11 19a8 8 0 100-16 8 8 0 000 16zm-2-8h.01M21 21l-4.35-4.35"
+              />
+            </svg>
+          </span>
+          <input
+            type="text"
+            placeholder="Search for a task..."
+            value={search}
+            onChange={handleSearchChange}
+            onClick={togglePopup}
+            className="search-bar"
+          />
+          {showPopup && (
+            <div className="popup-container">
+              <p>Task 1</p>
+              <p>Task 2</p>
+              <p>Task 3</p>
+            </div>
+          )}
+        </div>
+        
+        
+
+
       </div>
+
+      
+      
+
+      
 
       {showEventForm && (
         <EventForm
@@ -233,18 +312,21 @@ const CalendarComponent = () => {
       )}
 
 
-      <div id='calendar-class-ui' className = 'pt-3'>
+  <div className="calendar-container">
+      <div id="calendar-class-ui">
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth" // Default view is Month
+          initialView="dayGridMonth"
           headerToolbar={{
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay', // Allows switching between Month, Week, and Day views
+            right: 'dayGridMonth,timeGridWeek,timeGridDay',
           }}
+          height="100%" // Makes FullCalendar take full height of the container
+          expandRows={true} // Ensures rows expand to fill available height
           events={events}
           editable={true}
-          selectable={!showEventForm} 
+          selectable={!showEventForm}
           select={(info) => {
             setSlotInfo({
               start: info.startStr,
@@ -252,9 +334,12 @@ const CalendarComponent = () => {
             });
             setShowEventForm(true);
           }}
-          eventClick={handleEventClick} 
+          eventClick={(eventInfo) => setSelectedEvent(eventInfo.event)}
         />
       </div>
+    </div>
+    </div>
+
     </div>
   );
 };

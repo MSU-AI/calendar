@@ -1,3 +1,8 @@
+
+#screen-background {
+    background: (255, 255, 255, 0.1);
+}
+
 .header-container 
 {
     display: flex;
@@ -9,16 +14,22 @@
 {
     margin-left: 20px; 
 }
-
+#add-event-button:hover {
+    background-color: var(--fc-button-active-bg-color);
+    color: white;
+    transition: background-color 0.3s ease;
+}
 #add-event-button 
 {
     margin-left: 10px;
     margin-right: 10px; 
 }
 
-#login-button 
+#login-button:hover
 {
-    margin-left: auto; 
+    background-color: var(--fc-button-active-bg-color);
+    color: white;
+    transition: background-color 0.3s ease;
 }
 
 #add-event-button, #login-button 
@@ -50,5 +61,132 @@
     padding: 5px 10px;        
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
+
+/*Search Bar*/
+/* Center-aligned header for logo and search bar */
+.header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 20px;
+}
   
-/*mobile view styling*/
+.search-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 700px;
+    width: 100%;
+    z-index: 2;
+}
+  
+.search-bar {
+    font-weight: bold;
+    border: 1px solid rgb(49, 48, 48);
+    border-radius: 8px;
+    color: white;
+    background-color: black;
+    width: 100%;
+    max-width: 1000px;
+    padding: 12px 12px 12px 45px;
+    line-height: 24px;
+    transition: border-radius 0.2s ease;
+}
+
+/* When popup is shown, modify search bar border radius */
+.search-container.popup-active .search-bar {
+    border-radius: 8px 8px 0 0;
+    border-bottom: none;
+}
+  
+.popup-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: black;
+    border: 1px solid rgb(49, 48, 48);
+    border-top: none; /* Remove top border */
+    border-radius: 0 0 8px 8px;
+    margin-top: -1px; /* Compensate for border overlap */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+}
+  
+.popup-container p {
+    margin: 0;
+    color: white;
+    cursor: pointer;
+    padding: 12px 12px 12px 45px; /* Match search bar padding */
+}
+  
+.popup-container p:hover {
+    background-color: rgb(60, 60, 60);
+}
+
+.popup-container p:last-child {
+    border-radius: 0 0 8px 8px; /* Round corners only on last item */
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    color: #888;
+    pointer-events: none;
+    z-index: 11;
+}
+
+/* Container for full height minus the header space */
+.calendar-container {
+    height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+  
+#calendar-class-ui {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* Calendar border styling */
+/* Full calendar container */
+#calendar-class-ui .fc { 
+    border-radius: 12px;
+    border: none; /* Remove the border */
+    overflow: hidden;
+}
+
+/* Remove borders from table */
+#calendar-class-ui .fc .fc-scrollgrid {
+    border: none;
+    border-radius: 12px;
+}
+
+/* Remove cell borders */
+#calendar-class-ui .fc .fc-scrollgrid td,
+#calendar-class-ui .fc .fc-scrollgrid th {
+    border: none;
+}
+
+/* Subtle separator for days (optional) */
+#calendar-class-ui .fc .fc-daygrid-day {
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Very subtle border */
+}
+
+/* Events styling */
+#calendar-class-ui .fc-event {
+    border-radius: 4px;
+}
+
+/* Header/Toolbar area */
+#calendar-class-ui .fc-header-toolbar {
+    padding: 12px;
+}
