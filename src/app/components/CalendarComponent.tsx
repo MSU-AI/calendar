@@ -109,6 +109,43 @@ const CalendarComponent = () => {
     setShowPopup(!showPopup);
   };
 
+  const handleImport = (event: any) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const importedEvents = JSON.parse(e.target?.result as string);
+      setEvents(importedEvents);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleExport = () => {
+    const jsonData = JSON.stringify(events);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'events.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleEventDrop = (eventDropInfo: any) => {
+    const updatedEvent = {
+      id: eventDropInfo.event.id,
+      title: eventDropInfo.event.title,
+      start: eventDropInfo.event.start,
+      end: eventDropInfo.event.end || eventDropInfo.event.start,
+      extendedProps: eventDropInfo.event.extendedProps,
+    };
+    setEvents((prevEvents) =>
+      prevEvents.map((event) =>
+        event.id === updatedEvent.id ? updatedEvent : event
+      )
+    );
+  };
+
+
   return (
   <div id='screen-background'>
 
@@ -116,7 +153,28 @@ const CalendarComponent = () => {
   <div className="relative">
     <div className="flex items-center justify-between mb-4">
         <div className="absolute top-0 right-0 flex items-center space-x-4 mt-4 mr-4">
-          
+          <div className="flex space-x-2">
+            <button
+              className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+              onClick={handleExport}
+            >
+              Export Events
+            </button>
+            <label
+              className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800 cursor-pointer"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              Import Events
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="hidden"
+              />
+            </label>
+          </div>
+
           {session ? (
             <>
               <div className="flex items-center space-x-2">
@@ -359,6 +417,7 @@ const CalendarComponent = () => {
             setShowEventForm(true);
           }}
           eventClick={(eventInfo) => setSelectedEvent(eventInfo.event)}
+          eventDrop={handleEventDrop}
         />
       </div>
     </div>
