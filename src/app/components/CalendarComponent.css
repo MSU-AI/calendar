@@ -39,7 +39,7 @@
 
 #logo-bold-ui 
 {
-    margin-left: 10px;
+    margin-left: 30px;
 }
 
 #calendar-class-ui 
@@ -199,7 +199,7 @@
     width: 20%; /* Sidebar takes up 20% of the screen */
     background-color: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light gray background */
     padding: 20px;
-    border-radius: 8px;
+    
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
     margin: 20px;
@@ -237,4 +237,23 @@
     width: 80%; /* Calendar takes up remaining 80% of the screen */
     overflow: hidden;
     padding: 10px;
+  }
+  .add-task-button {
+    display: block;
+    width: 100%; /* Full width within the sidebar */
+    padding: 10px;
+    margin-bottom: 15px; /* Spacing below the button */
+    background-color: #0c73e7; /* Button background color */
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .add-task-button:hover {
+    background-color: #357ABD; /* Darker color on hover */
   }

@@ -152,12 +152,12 @@ const CalendarComponent = () => {
 
       <div className="flex items-center">
       
-        <button id='add-event-button'
+        {/*<button id='add-event-button'
           className="px-6 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-300 ease-in-out"
           onClick={() => setShowEventForm(true)}
         >
           + Add 
-        </button>
+        </button>*/}
 
         <h1 id = "logo-bold-ui" className="mt-2 text-2xl font-bold">Almanac</h1>
 
@@ -318,7 +318,10 @@ const CalendarComponent = () => {
   <div className="calendar-layout">
           {/* Sidebar for tasks */}
           <div className="sidebar">
-            <h2 className="sidebar-title">Tasks</h2>
+          <button className="add-task-button" onClick={() => setShowEventForm(true)}>
+            + Add 
+          </button>
+            <h2 className="sidebar-title">Agenda</h2>
             <ul className="task-list">
               {/*tasks.map((task, index) => (
                 <li key={index} className="task-item">
@@ -327,7 +330,7 @@ const CalendarComponent = () => {
               ))*/}
             </ul>
 
-            <h2 className="sidebar-title">Suggested Tasks</h2>
+            <h2 className="sidebar-title">Recommended</h2>
             <ul className="task-list">
               {/*tasks.map((task, index) => (
                 <li key={index} className="task-item">
