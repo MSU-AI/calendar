@@ -46,6 +46,8 @@ export async function signup(formData: FormData) {
   const bio = formData.get('bio') as string || '';
   const avatarUrl = formData.get('avatar_url') as string || '';
 
+  console.log('Signing up with:', { email, name, bio }); // Debugging output
+
   // Validate signup input
   if (!email || !password) {
     console.error('Missing signup credentials');
@@ -118,6 +120,9 @@ export async function googleAuth() {
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`, // Ensure this is set
+    },
   });
 
   if (error) {

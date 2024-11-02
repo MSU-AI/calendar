@@ -13,9 +13,14 @@ export default function AuthCallback() {
       try {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
+        console.log('Session Data:', sessionData); // Log the session data
+
         if (sessionError || !sessionData.session) {
           console.error('Failed to retrieve session:', sessionError?.message);
-          router.push('/error');
+          // Add a delay before redirecting to the error page
+          setTimeout(() => {
+            router.push('/error');
+          }, 2000); // Delay for 2 seconds
           return;
         }
 
@@ -24,9 +29,16 @@ export default function AuthCallback() {
         const name = user.user_metadata?.full_name || ''; // Full name from Google
         const avatarUrl = user.user_metadata?.avatar_url || ''; // Avatar URL from Google
 
+        console.log('Inserting profile with data:', {
+          id: userId,
+          name,
+          bio: '',
+          avatar_url: avatarUrl,
+        }); // Log data being inserted
+
         const { error: profileInsertError } = await supabase
           .from('profiles')
-          .insert({
+          .upsert({
             id: userId,
             name,
             bio: '',
@@ -35,7 +47,10 @@ export default function AuthCallback() {
 
         if (profileInsertError) {
           console.error('Profile insert error:', profileInsertError.message);
-          router.push('/error');
+          // Add a delay before redirecting to the error page
+          setTimeout(() => {
+            router.push('/error');
+          }, 2000); // Delay for 2 seconds
           return;
         }
 
@@ -43,7 +58,10 @@ export default function AuthCallback() {
         router.push('/'); 
       } catch (err) {
         console.error('Error during OAuth callback:', err);
-        router.push('/error');
+        // Add a delay before redirecting to the error page
+        setTimeout(() => {
+          router.push('/error');
+        }, 2000); // Delay for 2 seconds
       }
     };
 
