@@ -5,13 +5,13 @@ import interactionPlugin from '@fullcalendar/interaction'; // Allows interaction
 import { useEffect, useState, useRef } from 'react';
 import EventForm from './EventForm';
 import LoginPage from '../auth/login/page';
+import useEventManager from '@/hooks/useEventManager';
 import { createClient } from '@/utils/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import './CalendarComponent.css';
 
 const CalendarComponent = () => {
-  const supabase = createClient();
-  const [events, setEvents] = useState<any[]>([]);
+  const { events, saveEvents, syncEventsWithBackend } = useEventManager();
   const [showEventForm, setShowEventForm] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [editEvent, setEditEvent] = useState<any>(null);
@@ -20,14 +20,14 @@ const CalendarComponent = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] = useState(''); // Search input state
-  const [showPopup, setShowPopup] = useState(false); // Toggle popup state
-
-  const searchContainerRef = useRef<HTMLDivElement>(null); // Reference for search container
+  const [search, setSearch] = useState(''); 
+  const [showPopup, setShowPopup] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null); 
 
   useEffect(() => {
     const fetchSession = async () => {
-      const { data: sessionData, error } = await supabase.auth.getSession();
+      const supabase = createClient();
+      const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
         setSession(sessionData.session);
       }
@@ -35,8 +35,6 @@ const CalendarComponent = () => {
     };
 
     fetchSession();
-
-    // Close popup when clicking outside of the search container
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setShowPopup(false);
@@ -47,51 +45,52 @@ const CalendarComponent = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
 
-  }, [supabase]);
 
   const handleSaveEvent = (newEvent: any) => {
+    const createFormattedEvent = (event: any) => ({
+      id: `${new Date().getTime()}`,
+      title: event.title,
+      start: new Date(event.start),
+      end: event.end ? new Date(event.end) : new Date(event.start),
+      extendedProps: {
+        description: event.description || '',
+        category: event.category || '',
+        completion: typeof event.completion === 'boolean' ? event.completion : false,
+      },
+    });
+  
+    const updateEvent = (existingEvent: any, updatedEvent: any) => ({
+      ...existingEvent,
+      ...updatedEvent,
+      start: new Date(updatedEvent.start),
+      end: updatedEvent.end ? new Date(updatedEvent.end) : new Date(updatedEvent.start),
+      extendedProps: {
+        ...existingEvent.extendedProps,
+        description: updatedEvent.description || existingEvent.extendedProps.description,
+        category: updatedEvent.category || existingEvent.extendedProps.category,
+        completion: typeof updatedEvent.completion === 'boolean'
+          ? updatedEvent.completion
+          : existingEvent.extendedProps.completion,
+      },
+    });
+  
+    let updatedEvents;
     if (editEvent) {
-      // Update the existing event
-      setEvents((prevEvents) =>
-        prevEvents.map((event) =>
-          event.id === editEvent.id
-            ? {
-                ...event,
-                ...newEvent, // Merge new data with the existing event
-                start: new Date(newEvent.start), // Ensure start is a Date object
-                end: newEvent.end ? new Date(newEvent.end) : new Date(newEvent.start), // Ensure end is a Date object
-                extendedProps: {
-                  ...event.extendedProps, // Preserve existing properties
-                  description: newEvent.description || event.extendedProps.description,
-                  category: newEvent.category || event.extendedProps.category,
-                  completion: typeof newEvent.completion === 'boolean' 
-                    ? newEvent.completion 
-                    : event.extendedProps.completion, // Preserve completion if not explicitly set
-                },
-              }
-            : event
-        )
+      updatedEvents = events.map((event) =>
+        event.id === editEvent.id ? updateEvent(event, newEvent) : event
       );
       setEditEvent(null);
     } else {
-      // Add a new event
-      const formattedEvent = {
-        id: `${new Date().getTime()}`,
-        title: newEvent.title,
-        start: new Date(newEvent.start),
-        end: newEvent.end ? new Date(newEvent.end) : new Date(newEvent.start),
-        extendedProps: {
-          description: newEvent.description || '',
-          category: newEvent.category || '',
-          completion: typeof newEvent.completion === 'boolean' ? newEvent.completion : false,
-        },
-      };
-      setEvents((prevEvents) => [...prevEvents, formattedEvent]);
+      const formattedEvent = createFormattedEvent(newEvent);
+      updatedEvents = [...events, formattedEvent];
     }
+  
+    saveEvents(updatedEvents);
     setShowEventForm(false);
   };
-  
+
   const handleEventClick = (eventInfo: any) => {
     setSelectedEvent(eventInfo.event);
   };
@@ -102,12 +101,11 @@ const CalendarComponent = () => {
 
   const handleEditEvent = () => {
     if (selectedEvent) {
-      // Make sure all necessary properties, including category, are included
       const eventToEdit = {
         id: selectedEvent.id,
         title: selectedEvent.title || '',
         description: selectedEvent.extendedProps?.description || '',
-        category: selectedEvent.extendedProps?.category || '', // Ensure category is included
+        category: selectedEvent.extendedProps?.category || '', 
         start: selectedEvent.start
           ? formatDateForInput(new Date(selectedEvent.start))
           : '',
@@ -119,9 +117,9 @@ const CalendarComponent = () => {
           : false,
       };
 
-      // Debugging logs
-      console.log("Selected Event:", selectedEvent);
-      console.log("Event to Edit:", eventToEdit);
+      // // Debugging logs
+      // console.log("Selected Event:", selectedEvent);
+      // console.log("Event to Edit:", eventToEdit);
 
       setEditEvent(eventToEdit);
       setShowEventForm(true);
@@ -134,25 +132,23 @@ const CalendarComponent = () => {
   };
     
   const handleDeleteEvent = () => {
-    setEvents((prevEvents) =>
-      prevEvents.filter((event) => event.id !== selectedEvent.id)
-    );
+    const updatedEvents = events.filter((event) => event.id !== selectedEvent.id);
+    saveEvents(updatedEvents);
     setSelectedEvent(null);
   };
 
   const handleLogout = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     setSession(null);
     setShowLoginModal(false);
   };
 
 
-  // Function to handle search input change
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
-  // Function to toggle the popup
   const togglePopup = () => {
     setShowPopup(!showPopup);
   };
@@ -162,7 +158,7 @@ const CalendarComponent = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const importedEvents = JSON.parse(e.target?.result as string);
-      setEvents(importedEvents);
+      saveEvents(importedEvents);
     };
     reader.readAsText(file);
   };
@@ -186,11 +182,10 @@ const CalendarComponent = () => {
       end: eventDropInfo.event.end || eventDropInfo.event.start,
       extendedProps: eventDropInfo.event.extendedProps,
     };
-    setEvents((prevEvents) =>
-      prevEvents.map((event) =>
-        event.id === updatedEvent.id ? updatedEvent : event
-      )
+    const updatedEvents = events.map((event) =>
+      event.id === updatedEvent.id ? updatedEvent : event
     );
+    saveEvents(updatedEvents);
   };
 
 
