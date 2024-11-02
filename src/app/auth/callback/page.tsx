@@ -18,9 +18,7 @@ export default function AuthCallback() {
         if (sessionError || !sessionData.session) {
           console.error('Failed to retrieve session:', sessionError?.message);
           // Add a delay before redirecting to the error page
-          setTimeout(() => {
-            router.push('/error');
-          }, 2000); // Delay for 2 seconds
+          router.push('/error');
           return;
         }
 
@@ -47,10 +45,7 @@ export default function AuthCallback() {
 
         if (profileInsertError) {
           console.error('Profile insert error:', profileInsertError.message);
-          // Add a delay before redirecting to the error page
-          setTimeout(() => {
-            router.push('/error');
-          }, 2000); // Delay for 2 seconds
+          router.push('/error');
           return;
         }
 
@@ -58,10 +53,7 @@ export default function AuthCallback() {
         router.push('/'); 
       } catch (err) {
         console.error('Error during OAuth callback:', err);
-        // Add a delay before redirecting to the error page
-        setTimeout(() => {
-          router.push('/error');
-        }, 2000); // Delay for 2 seconds
+        router.push('/error');
       }
     };
 
