@@ -19,7 +19,6 @@ export default function LoginPage() {
   const [session, setSession] = useState<Session | null>(null); 
   const [loading, setLoading] = useState(true); 
 
-  // checks if user is already logged in, better maybe to find a better fix instead of useeffect
   useEffect(() => {
     const checkSession = async () => {
       const { data: sessionData, error } = await supabase.auth.getSession();
@@ -61,21 +60,18 @@ export default function LoginPage() {
     e.preventDefault();
     setErrorMessage('');
 
+    console.log('Form Data:', { email, password, name, bio, confirmPassword }); // Debugging output
+
     if (isSignup) {
       if (password !== confirmPassword) {
         setErrorMessage("Passwords do not match!");
         return;
       }
 
-      const formData = new FormData(e.target as HTMLFormElement);
-      formData.append('email', email);
-      formData.append('password', password);
-      formData.append('name', name);
-      formData.append('bio', bio);   
-
+      const formData = new FormData(e.currentTarget as HTMLFormElement); // Use e.currentTarget to refer to the form
       await signup(formData);
     } else {
-      await login(new FormData(e.target as HTMLFormElement));
+      await login(new FormData(e.currentTarget as HTMLFormElement));
     }
   };
 
@@ -92,7 +88,7 @@ export default function LoginPage() {
   };
 
   return (
-    <form className="space-y-6 bg-neutral-950 p-6 rounded-lg shadow-lg max-w-md mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-6 bg-neutral-950 p-6 rounded-lg shadow-lg max-w-md mx-auto"> {/* Added onSubmit here */}
       <h2 className="text-3xl font-bold text-center mb-6 text-white">{isSignup ? 'Sign Up' : 'Log In'}</h2>
 
       {isSignup && (

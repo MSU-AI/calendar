@@ -7,6 +7,8 @@ import { useState } from 'react';
 import EventForm from './components/EventForm';
 
 const Home: NextPage = () => {
+
+  
   const [events, setEvents] = useState<any[]>([]);  
   const [showEventForm, setShowEventForm] = useState<boolean>(false);
   const handleSaveEvent = (newEvent: any) => {
