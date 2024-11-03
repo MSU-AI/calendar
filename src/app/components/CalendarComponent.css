@@ -80,10 +80,11 @@
   
 .search-bar {
     font-weight: bold;
-    /*border: 1px solid rgb(25, 24, 24);*/
+    border: 1px solid #3d3d3d;
     border-radius: 8px;
+   
     color: white;
-    background-color:var(--fc-button-active-bg-color);
+    background-color: black; /* Grayish background */
     width: 100%;
     max-width: 1000px;
     padding: 12px 12px 12px 45px;
@@ -102,7 +103,8 @@
     top: 100%;
     left: 0;
     width: 100%;
-    background-color:var(--fc-button-active-bg-color);
+    background-color:black;
+    
     /*border: 1px solid rgb(49, 48, 48);*/
     border-top: none; /* Remove top border */
     border-radius: 0 0 8px 8px;
@@ -202,7 +204,7 @@
     
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
-    margin: 20px;
+    margin: 15px;
     color: white;
   }
   
@@ -243,17 +245,19 @@
     width: 100%; /* Full width within the sidebar */
     padding: 10px;
     margin-bottom: 15px; /* Spacing below the button */
-    background-color: #0c73e7; /* Button background color */
-    color: white;
+    background-color: white; /* Button background color */
+    color: black;
     font-weight: bold;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     text-align: center;
     transition: background-color 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(10, 10, 10, 0.1);
   }
   
   .add-task-button:hover {
-    background-color: #357ABD; /* Darker color on hover */
+    background-color: var(--fc-button-active-bg-color); /* Darker color on hover */
+    color: white;
+   
   }
