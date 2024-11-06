@@ -101,20 +101,20 @@ const useEventManager = () => {
         console.error('Error saving new event to Supabase:', error);
       } else if (data) {
         const newEventWithId = { ...newEvent, id: data[0].task_id };
-        saveEvents([...events, newEventWithId]);
+        saveEventsLocally([...events, newEventWithId]);
       }
     } catch (error) {
       console.error('Exception caught while saving event:', error);
     }
   };
 
-  // delete event from supaabase and local storage
+  // delete event from supabase and local storage
   const deleteEvent = async (eventId: string) => {
     try {
       const { error } = await supabase
         .from("task_log")
         .delete()
-        .eq("id", eventId);
+        .eq("task_id", eventId);
 
       if (error) {
         console.error("Error deleting event from Supabase:", error);
@@ -122,7 +122,8 @@ const useEventManager = () => {
       }
 
       const updatedEvents = events.filter((event) => event.id !== eventId);
-      saveEvents(updatedEvents); 
+      saveEventsLocally(updatedEvents); 
+      setEvents(updatedEvents);
     } catch (err) {
       console.error("Exception caught while deleting event:", err);
     }
@@ -163,7 +164,7 @@ const useEventManager = () => {
     }
   };
 
-  return { events, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent };
+  return { events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent };
 };
 
 export default useEventManager;

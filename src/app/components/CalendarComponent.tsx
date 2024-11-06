@@ -11,7 +11,6 @@ import { Session } from '@supabase/supabase-js';
 import './CalendarComponent.css';
 
 const CalendarComponent = () => {
-  const { events, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent } = useEventManager();
   const [showEventForm, setShowEventForm] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [editEvent, setEditEvent] = useState<any>(null);
@@ -19,6 +18,8 @@ const CalendarComponent = () => {
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent } = useEventManager();
 
   const [search, setSearch] = useState(''); 
   const [showPopup, setShowPopup] = useState(false);
@@ -137,12 +138,17 @@ const CalendarComponent = () => {
     return date.toLocaleDateString('en-CA') + 'T' + date.toTimeString().slice(0, 5);
   };
     
-  const handleDeleteEvent = () => {
+  const handleDeleteEvent = async () => {
     if (!selectedEvent) return;
-    deleteEvent(selectedEvent.id);
-    setSelectedEvent(null);
-  };
-
+    try {
+      await deleteEvent(selectedEvent.id);
+      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== selectedEvent.id));
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
+    };
+  
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
