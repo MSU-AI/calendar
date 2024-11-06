@@ -80,13 +80,26 @@ const useEventManager = () => {
       return;
     }
 
+
+    const eventStart = new Date(newEvent.start);
+    eventStart.setHours(15, 30, 0); 
+    const eventCreationTime = eventStart
+    .toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  
+    console.log(eventCreationTime); // Should give the correct time
+    console.log(new Date(newEvent.start).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }))
     const formattedEvent = {
       user_id: session.user.id,
       title: newEvent.title,
       category: newEvent.extendedProps.category || '',
       description: newEvent.extendedProps.description || '',
       date_interval: `[${new Date(newEvent.start).toISOString()},${new Date(newEvent.end).toISOString()}]`,
-      event_creation_time: new Date(newEvent.start).toISOString().split("T")[1].slice(0, 8),
+      event_creation_time: new Date().toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
       completion: newEvent.extendedProps.completion,
       priority: newEvent.extendedProps.priority || '',
     };
@@ -143,7 +156,7 @@ const useEventManager = () => {
         user_id: session.user.id,
         title: event.title,
         date_interval: `[${new Date(event.start).toISOString()},${new Date(event.end).toISOString()}]`,
-        event_creation_time: new Date(event.start).toTimeString().split(" ")[0],
+        event_creation_time: new Date(event.start).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         category: event.extendedProps.category || "",
         completion: event.extendedProps.completion,
         priority: event.extendedProps.priority || "",
