@@ -59,6 +59,7 @@
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+
 /*Search Bar*/
 /* Center-aligned header for logo and search bar */
 .header-center {
@@ -223,15 +224,19 @@
   .task-item {
     padding: 10px;
     margin-bottom: 8px;
-    background-color: white;
-    border-radius: 4px;
+    background-color: none;
+    border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: background-color 0.2s;
+    color: white;
+    border: 1px solid white;
+    
   }
   
   .task-item:hover {
-    background-color: #e0e0e0;
+    background-color: white;
+    color: black;
   }
   
   /* Calendar container styling */
@@ -260,4 +265,26 @@
     background-color: var(--fc-button-active-bg-color); /* Darker color on hover */
     color: white;
    
+
   }
+/*Overriding the event styling*/
+.fc-event {
+    background-color: white !important; /* Sets event background to white */
+    color: black !important; /* Sets text color to black */
+    border: 1px solid #dcdcdc; /* Optional: subtle border for contrast */
+}
+.fc .fc-event .fc-event-title, 
+.fc .fc-event .fc-event-time {
+    color: black !important; /* Ensure text within the event is black */
+    font-weight: bold;
+}
+.fc-event:hover {
+    background-color: #f0f0f0 !important; /* Light gray on hover */
+    color: black !important;
+}
+/* Change the highlight color for the current day */
+.fc .fc-day-today, .fc-daygrid-day.fc-day-today  {
+    background-color: var(--fc-button-active-bg-color) !important; /* Dark blue color */
+    color: white !important; /* Optional: change text color to white for contrast */
+}
+

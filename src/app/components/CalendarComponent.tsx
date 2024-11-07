@@ -1,8 +1,9 @@
+
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid'; // Month view
 import timeGridPlugin from '@fullcalendar/timegrid'; // Week and Day views
 import interactionPlugin from '@fullcalendar/interaction'; // Allows interaction (e.g., event clicking)
-import { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import EventForm from './EventForm';
 import LoginPage from '../auth/login/page';
 import useEventManager from '@/hooks/useEventManager';
@@ -18,13 +19,10 @@ const CalendarComponent = () => {
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-
   const { events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent } = useEventManager();
-
   const [search, setSearch] = useState(''); 
   const [showPopup, setShowPopup] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null); 
-
   const memoizedFetchEventsForUser = useCallback(fetchEventsForUser, []);
 
   useEffect(() => {
@@ -204,6 +202,12 @@ const CalendarComponent = () => {
     saveEventsLocally(updatedEvents);
   };
 
+   // Logic for handlung upcoming events in Sidebar
+   const today = new Date();
+   const upcomingEvents = events
+     .filter((event) => new Date(event.start) >= today)
+     .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
 
   return (
     <div id='screen-background'>
@@ -304,7 +308,7 @@ const CalendarComponent = () => {
               onClick={togglePopup}
               className="search-bar"
             />
-            
+
             {showPopup && (
               <div className="popup-container">
                 {events
@@ -468,11 +472,16 @@ const CalendarComponent = () => {
             </button>
             <h2 className="sidebar-title">Agenda</h2>
             <ul className="task-list">
-              {/*tasks.map((task, index) => (
-                <li key={index} className="task-item">
-                  {task.title}
+              {upcomingEvents.map((event, index) => (
+                <li 
+                  key={index} 
+                  className="task-item" 
+                  onClick={() => handleEventClick({ event })} // Make agenda items clickable
+                >
+                  <strong>{event.title}</strong><br />
+                  <span>{new Date(event.start).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>
                 </li>
-              ))*/}
+              ))}
             </ul>
 
             <h2 className="sidebar-title">Recommended</h2>
