@@ -2,7 +2,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid'; // Month view
 import timeGridPlugin from '@fullcalendar/timegrid'; // Week and Day views
 import interactionPlugin from '@fullcalendar/interaction'; // Allows interaction (e.g., event clicking)
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import EventForm from './EventForm';
 import LoginPage from '../auth/login/page';
 import useEventManager from '@/hooks/useEventManager';
@@ -11,7 +11,6 @@ import { Session } from '@supabase/supabase-js';
 import './CalendarComponent.css';
 
 const CalendarComponent = () => {
-  const { events, saveEvents, syncEventsWithBackend } = useEventManager();
   const [showEventForm, setShowEventForm] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [editEvent, setEditEvent] = useState<any>(null);
@@ -20,9 +19,13 @@ const CalendarComponent = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent } = useEventManager();
+
   const [search, setSearch] = useState(''); 
   const [showPopup, setShowPopup] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null); 
+
+  const memoizedFetchEventsForUser = useCallback(fetchEventsForUser, []);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -30,6 +33,7 @@ const CalendarComponent = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
         setSession(sessionData.session);
+        await memoizedFetchEventsForUser(sessionData.session.user.id);
       }
       setLoading(false);
     };
@@ -45,7 +49,7 @@ const CalendarComponent = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [memoizedFetchEventsForUser]);
 
 
   const handleSaveEvent = (newEvent: any) => {
@@ -58,6 +62,7 @@ const CalendarComponent = () => {
         description: event.description || '',
         category: event.category || '',
         completion: typeof event.completion === 'boolean' ? event.completion : false,
+        priority: event.priority || '',
       },
     });
   
@@ -73,6 +78,7 @@ const CalendarComponent = () => {
         completion: typeof updatedEvent.completion === 'boolean'
           ? updatedEvent.completion
           : existingEvent.extendedProps.completion,
+        priority: updatedEvent.priority || existingEvent.extendedProps.priority, 
       },
     });
   
@@ -85,9 +91,10 @@ const CalendarComponent = () => {
     } else {
       const formattedEvent = createFormattedEvent(newEvent);
       updatedEvents = [...events, formattedEvent];
+      saveNewEvent(formattedEvent)
     }
   
-    saveEvents(updatedEvents);
+    saveEventsLocally(updatedEvents);
     setShowEventForm(false);
   };
 
@@ -131,17 +138,26 @@ const CalendarComponent = () => {
     return date.toLocaleDateString('en-CA') + 'T' + date.toTimeString().slice(0, 5);
   };
     
-  const handleDeleteEvent = () => {
-    const updatedEvents = events.filter((event) => event.id !== selectedEvent.id);
-    saveEvents(updatedEvents);
-    setSelectedEvent(null);
-  };
-
+  const handleDeleteEvent = async () => {
+    if (!selectedEvent) return;
+    try {
+      await deleteEvent(selectedEvent.id);
+      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== selectedEvent.id));
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
+    };
+  
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     setSession(null);
     setShowLoginModal(false);
+
+    // after logout, clear events
+    localStorage.removeItem('events');
+    saveEventsLocally([]);
   };
 
 
@@ -158,7 +174,7 @@ const CalendarComponent = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const importedEvents = JSON.parse(e.target?.result as string);
-      saveEvents(importedEvents);
+      saveEventsLocally(importedEvents);
     };
     reader.readAsText(file);
   };
@@ -185,7 +201,7 @@ const CalendarComponent = () => {
     const updatedEvents = events.map((event) =>
       event.id === updatedEvent.id ? updatedEvent : event
     );
-    saveEvents(updatedEvents);
+    saveEventsLocally(updatedEvents);
   };
 
 
