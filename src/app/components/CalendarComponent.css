@@ -1,5 +1,13 @@
-
-
+#screen-background 
+{
+    background-color: #1e1d1d;
+    min-height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    margin: 0; /* Remove any default margin */
+    padding: 0; /* Remove any default padding */
+    box-sizing: border-box;
+}
 .header-container 
 {
     display: flex;
@@ -80,18 +88,17 @@
 }
   
 .search-bar {
-    font-weight: bold;
-    border: 1px solid #3d3d3d;
-    border-radius: 8px;
-   
+    border-radius: 25px;
     color: white;
     background-color: black; /* Grayish background */
     width: 100%;
     max-width: 1000px;
-    padding: 12px 12px 12px 45px;
+    padding: 10px 10px 10px 45px;
     line-height: 24px;
     transition: border-radius 0.2s ease;
+    
 }
+/*Edit so that the search bar changes when the pop up appears*/
 
 /* When popup is shown, modify search bar border radius */
 .search-container.popup-active .search-bar {
@@ -145,7 +152,7 @@
 
 /* Container for full height minus the header space */
 .calendar-container {
-    height: calc(100vh - 80px);
+    height: calc(100vh - 50px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -199,14 +206,19 @@
   
   /* Sidebar styling */
   .sidebar {
-    width: 20%; /* Sidebar takes up 20% of the screen */
-    background-color: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light gray background */
+    width: 23%; /* Sidebar takes up 20% of the screen */
+    /*background-color: 0 4px 8px rgba(0, 0, 0, 0.1);  Light gray background */
+    background-color: 0 4px 8px black;
     padding: 20px;
-    
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
-    margin: 15px;
     color: white;
+    margin: 20px;
+    border-radius: 15px; /* Optional: round the corners to match */
+    overflow-y: auto; /* Ensures content scrolls if it overflows */
+    background-color: #121111;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
+    height: calc(100vh - 90px);
+    margin-right: 0;
   }
   
   .sidebar-title {
@@ -230,7 +242,7 @@
     cursor: pointer;
     transition: background-color 0.2s;
     color: white;
-    border: 1px solid white;
+    border: none;
     
   }
   
@@ -249,7 +261,7 @@
     display: block;
     width: 100%; /* Full width within the sidebar */
     padding: 10px;
-    margin-bottom: 15px; /* Spacing below the button */
+    margin-bottom: 10px; /* Spacing below the button */
     background-color: white; /* Button background color */
     color: black;
     font-weight: bold;
@@ -267,7 +279,7 @@
    
 
   }
-/*Overriding the event styling*/
+/*Overriding the event styling for the full calendar UI*/
 .fc-event {
     background-color: white !important; /* Sets event background to white */
     color: black !important; /* Sets text color to black */
@@ -285,6 +297,13 @@
 /* Change the highlight color for the current day */
 .fc .fc-day-today, .fc-daygrid-day.fc-day-today  {
     background-color: var(--fc-button-active-bg-color) !important; /* Dark blue color */
-    color: white !important; /* Optional: change text color to white for contrast */
+    color: white !important;
 }
+#calendar-class-ui {
+    background-color: #121111; 
+    margin: 10px; 
+    border-radius: 15px; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 

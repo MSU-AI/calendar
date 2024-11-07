@@ -216,6 +216,7 @@ const CalendarComponent = () => {
       <div className="relative">
         <div className="flex items-center justify-between mb-4">
           <div className="absolute top-0 right-0 flex items-center space-x-4 mt-4 mr-4">
+            {/*Will change for making a settings button to hold these values */}
             <div className="flex space-x-2">
               <button
                 className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
@@ -237,6 +238,7 @@ const CalendarComponent = () => {
                 />
               </label>
             </div>
+
 
             {session ? (
               <>
