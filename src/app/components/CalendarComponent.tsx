@@ -304,13 +304,19 @@ const CalendarComponent = () => {
               onClick={togglePopup}
               className="search-bar"
             />
+            
             {showPopup && (
               <div className="popup-container">
-                <p>Task 1</p>
-                <p>Task 2</p>
-                <p>Task 3</p>
+                {events
+                  .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
+                  .map((event, index) => (
+                    <p key={index} onClick={() => handleEventClick({ event })}>
+                      {event.title}
+                    </p>
+                  ))}
               </div>
             )}
+
           </div>
 
 
