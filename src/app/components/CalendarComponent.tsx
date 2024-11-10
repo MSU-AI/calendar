@@ -209,6 +209,8 @@ const CalendarComponent = () => {
      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
 
+
+
   return (
     <div id='screen-background'>
 
@@ -216,28 +218,10 @@ const CalendarComponent = () => {
       <div className="relative">
         <div className="flex items-center justify-between mb-4">
           <div className="absolute top-0 right-0 flex items-center space-x-4 mt-4 mr-4">
-            {/*Will change for making a settings button to hold these values */}
-            <div className="flex space-x-2">
-              <button
-                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-                onClick={handleExport}
-              >
-                Export Events
-              </button>
-              <label
-                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800 cursor-pointer"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              >
-                Import Events
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImport}
-                  className="hidden"
-                />
-              </label>
-            </div>
+            
+
+
+            
 
 
             {session ? (
@@ -268,6 +252,40 @@ const CalendarComponent = () => {
                 Login
               </button>
             )}
+
+<div className="flex space-x-2">
+              {/*Will change for making a settings button to hold these values */}
+              <button
+                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                onClick={handleExport}
+              >
+                Settings
+              </button>
+
+            {/*
+              <button
+                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                onClick={handleExport}
+              >
+                Export Events
+              </button>
+              <label
+                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800 cursor-pointer"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                Import Events
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImport}
+                  className="hidden"
+                />
+              </label>
+              */}
+            </div>
+
           </div>
 
 
@@ -282,7 +300,7 @@ const CalendarComponent = () => {
           + Add 
         </button>*/}
 
-          <h1 id="logo-bold-ui" className="mt-2 text-2xl font-bold">Almanac</h1>
+          <h1 id="logo-bold-ui" className="mt-2 text-2xl font-bold">calunar</h1>
 
 
           <div className="search-container" ref={searchContainerRef}>
@@ -304,7 +322,7 @@ const CalendarComponent = () => {
             </span>
             <input
               type="text"
-              placeholder="Search for a task..."
+              placeholder="Search for an event..."
               value={search}
               onChange={handleSearchChange}
               onClick={togglePopup}
@@ -367,9 +385,18 @@ const CalendarComponent = () => {
 
 
         {selectedEvent && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
-            <div className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md text-white space-y-4">
-              <h2 className="text-2xl font-semibold mb-4">Event Details</h2>
+          <div  className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+            <div id='event-details-tag-2' className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md text-white space-y-4">
+              {/*<h2 className="text-2xl font-semibold mb-4">Event Details</h2>*/}
+              <div className="flex justify-end space-x-4">
+
+                <button
+                  onClick={closeEventDescription}
+                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition duration-200"
+                >
+                  Close
+                </button>
+              </div>
               <div className="space-y-2">
                 <p className="text-lg">
                   <strong>Title:</strong> {selectedEvent.title || 'No title specified'}
@@ -407,8 +434,9 @@ const CalendarComponent = () => {
                   {selectedEvent.extendedProps.completion ? 'Yes' : 'No'}
                 </p>
               </div>
-              <div className="flex justify-end space-x-4">
-                <button
+
+              <div id='delete-event-details-btns' className="flex justify-end space-x-4">
+                <button 
                   onClick={handleDeleteEvent}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition duration-200"
                 >
@@ -422,13 +450,9 @@ const CalendarComponent = () => {
                   Edit
                 </button>
 
-                <button
-                  onClick={closeEventDescription}
-                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition duration-200"
-                >
-                  Close
-                </button>
+                
               </div>
+              
             </div>
           </div>
         )}
