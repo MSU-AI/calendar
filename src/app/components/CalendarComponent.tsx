@@ -6,10 +6,13 @@ import interactionPlugin from '@fullcalendar/interaction'; // Allows interaction
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import EventForm from './EventForm';
 import LoginPage from '../auth/login/page';
-import useEventManager from '@/hooks/useEventManager';
-import { createClient } from '@/utils/supabase/client';
-import { Session } from '@supabase/supabase-js';
 import './CalendarComponent.css';
+
+import { Session } from '@supabase/supabase-js';
+
+import supabase from '@/hooks/supabaseClient';
+import useEventManager from '@/hooks/useEventManager';
+
 
 const CalendarComponent = () => {
   const [showEventForm, setShowEventForm] = useState<boolean>(false);
@@ -19,15 +22,17 @@ const CalendarComponent = () => {
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent } = useEventManager();
+  const {events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent } = useEventManager();
   const [search, setSearch] = useState(''); 
   const [showPopup, setShowPopup] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null); 
   const memoizedFetchEventsForUser = useCallback(fetchEventsForUser, []);
+  //console.log("memoizedFetchEventsForUser reference updated:", memoizedFetchEventsForUser);
 
   useEffect(() => {
+    //console.log("CalendarComponent useEffect triggered");
+    //console.log("Events:", events);
     const fetchSession = async () => {
-      const supabase = createClient();
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
         setSession(sessionData.session);
@@ -52,7 +57,7 @@ const CalendarComponent = () => {
 
   const handleSaveEvent = (newEvent: any) => {
     const createFormattedEvent = (event: any) => ({
-      id: `${new Date().getTime()}`,
+      id: `${Date.now()}-${Math.floor(Math.random() * 100000)}`,
       title: event.title,
       start: new Date(event.start),
       end: event.end ? new Date(event.end) : new Date(event.start),
@@ -136,19 +141,50 @@ const CalendarComponent = () => {
     return date.toLocaleDateString('en-CA') + 'T' + date.toTimeString().slice(0, 5);
   };
     
+  // const handleDeleteEvent = async () => {
+  //   if (!selectedEvent) return;
+  //   // this logic is very optimistic, it will update the UI by removing the event locally first THEN supabase (but its much snappier)
+  //   // on the off-chance API call doesnt work (which is rare), we can rollback the UI to re-add the event
+  //   setEvents((prevEvents) => prevEvents.filter((event) => event.id !== selectedEvent.id));
+  //   saveEventsLocally(events.filter((event) => event.id !== selectedEvent.id)); 
+  //   setSelectedEvent(null); 
+  //   try {
+  //     await deleteEvent(selectedEvent.id);
+  //     console.log("Event successfully deleted from Supabase.");
+  //   } catch (error) {
+  //     console.error("Error deleting event from Supabase:", error);
+  //     // can add rollback logic here
+  //   }
+  // };
   const handleDeleteEvent = async () => {
     if (!selectedEvent) return;
+
+    //console.log("Deleting selected event with ID:", selectedEvent.id);
+
+    // Optimistically update the UI by removing the event locally first
+    setEvents((prevEvents) => {
+      const updatedEvents = prevEvents.filter((event) => event.id !== selectedEvent.id);
+      localStorage.setItem('events', JSON.stringify(updatedEvents)); // Sync to local storage
+      //console.log("Events after local delete (before Supabase sync):", updatedEvents);
+      return updatedEvents;
+    });
+
+    // Clear selectedEvent for UI cleanup
+    setSelectedEvent(null);
+
+    // Perform delete operation on Supabase
     try {
       await deleteEvent(selectedEvent.id);
-      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== selectedEvent.id));
-      setSelectedEvent(null);
     } catch (error) {
       console.error("Error deleting event:", error);
+      // Optional: Add rollback logic here if delete fails
     }
-    };
-  
+  };
+
+    
+
+
   const handleLogout = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
     setSession(null);
     setShowLoginModal(false);
@@ -522,6 +558,7 @@ const CalendarComponent = () => {
           <div className="calendar-container">
             <div id="calendar-class-ui">
               <FullCalendar
+                key={events.length}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 headerToolbar={{

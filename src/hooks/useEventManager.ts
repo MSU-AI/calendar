@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
-import { createClient } from '@/utils/supabase/client';
-
+import supabase from '@/hooks/supabaseClient';
 
 export interface EventExtendedProps {
   description: string;
@@ -21,24 +20,11 @@ export interface CalendarEvent {
 
 
 const useEventManager = () => {
-  const supabase = createClient();
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]); 
   const [session, setSession] = useState<Session | null>(null);
 
-  useEffect(() => {
-    const savedEvents: CalendarEvent[] = JSON.parse(localStorage.getItem('events') || '[]');
-    setEvents(savedEvents);
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data?.session || null);
-      if (data?.session) {
-        fetchEventsForUser(data.session.user.id);
-      }
-    };
-    fetchSession();
-  }, [supabase]);
-
-  const fetchEventsForUser = async (userId: string) => {
+  const fetchEventsForUser = useCallback(async (userId: any) => {
+    //console.log("fetchEventsForUser called with userId:", userId);
     try {
       const { data, error } = await supabase
         .from('task_log')
@@ -65,7 +51,21 @@ const useEventManager = () => {
     } catch (error) {
       console.error('Exception caught while fetching events:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const savedEvents: CalendarEvent[] = JSON.parse(localStorage.getItem('events') || '[]');
+    // console.log("heres", savedEvents)
+    setEvents(savedEvents);
+    const fetchSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data?.session || null);
+      if (data?.session) {
+        fetchEventsForUser(data.session.user.id);
+      }
+    };
+    fetchSession();
+  }, [fetchEventsForUser]);
 
   // locally store events and save to local storage
   const saveEventsLocally = (updatedEvents: CalendarEvent[]) => {
@@ -80,14 +80,10 @@ const useEventManager = () => {
       return;
     }
 
-
     const eventStart = new Date(newEvent.start);
     eventStart.setHours(15, 30, 0); 
     const eventCreationTime = eventStart
     .toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  
-    console.log(eventCreationTime); // Should give the correct time
-    console.log(new Date(newEvent.start).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }))
     const formattedEvent = {
       user_id: session.user.id,
       title: newEvent.title,
@@ -122,25 +118,38 @@ const useEventManager = () => {
   };
 
   // delete event from supabase and local storage
-  const deleteEvent = async (eventId: string) => {
-    try {
-      const { error } = await supabase
-        .from("task_log")
-        .delete()
-        .eq("task_id", eventId);
-
-      if (error) {
-        console.error("Error deleting event from Supabase:", error);
-        return;
-      }
-
-      const updatedEvents = events.filter((event) => event.id !== eventId);
-      saveEventsLocally(updatedEvents); 
-      setEvents(updatedEvents);
-    } catch (err) {
-      console.error("Exception caught while deleting event:", err);
+  const deleteEvent = async (eventId: string | number) => {
+    const formattedEventId = typeof eventId === 'string' ? parseInt(eventId) : eventId;
+  
+    // Optimistic update to remove event from local `events` state and localStorage immediately
+    const updatedEvents = events.filter((event) => parseInt(event.id as string) !== formattedEventId);
+    if (updatedEvents.length === events.length) {
+      console.error("Deletion failed locally - event not found in current events.");
+      return;
     }
+    setEvents(updatedEvents); 
+
+    if (session) {
+      try {
+        const { error } = await supabase
+          .from("task_log")
+          .delete()
+          .eq("task_id", eventId);
+  
+        if (error) {
+          console.error("Error deleting event from Supabase:", error);
+        } else {
+          console.log("Event successfully deleted from Supabase.");
+        }
+      } catch (err) {
+        console.error("Exception caught while deleting event from Supabase:", err);
+      }
+    }
+
+    saveEventsLocally(updatedEvents);
   };
+  
+  
 
   // store all events to local storage and save to Supabase (currently unused)
   const syncEventsWithBackend = async () => {
