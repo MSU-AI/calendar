@@ -310,6 +310,20 @@
 #event-details-tag-2 {
     background-color: #121111;
 }
-#delete-event-details-btns button {
+.pill-container button {
+    margin: 10px;
+    margin-left: 0px;
+}
+.fc .fc-button {
+    @apply bg-[#1a252f] text-white rounded-full hover:bg-[#162029] px-4 py-2;
+    border: none;
+    transition: background-color 0.3s ease;
+}
 
+.fc .fc-button:hover {
+    @apply bg-[#162029];
+}
+
+.fc .fc-button.fc-button-active {
+    @apply bg-green-600 text-white;
 }

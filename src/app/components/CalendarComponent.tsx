@@ -209,8 +209,6 @@ const CalendarComponent = () => {
      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
 
-
-
   return (
     <div id='screen-background'>
 
@@ -219,11 +217,6 @@ const CalendarComponent = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="absolute top-0 right-0 flex items-center space-x-4 mt-4 mr-4">
             
-
-
-            
-
-
             {session ? (
               <>
                 <div className="flex items-center space-x-2">
@@ -253,7 +246,7 @@ const CalendarComponent = () => {
               </button>
             )}
 
-<div className="flex space-x-2">
+            <div className="flex space-x-2">
               {/*Will change for making a settings button to hold these values */}
               <button
                 className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
@@ -300,7 +293,7 @@ const CalendarComponent = () => {
           + Add 
         </button>*/}
 
-          <h1 id="logo-bold-ui" className="mt-2 text-2xl font-bold">calunar</h1>
+          <h1 id="logo-bold-ui" className="mt-2 text-2xl font-bold">almanac</h1>
 
 
           <div className="search-container" ref={searchContainerRef}>
@@ -329,17 +322,24 @@ const CalendarComponent = () => {
               className="search-bar"
             />
 
-            {showPopup && (
-              <div className="popup-container">
-                {events
-                  .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
-                  .map((event, index) => (
-                    <p key={index} onClick={() => handleEventClick({ event })}>
-                      {event.title}
-                    </p>
-                  ))}
-              </div>
-            )}
+          {showPopup && (
+            <div className="popup-container">
+              {events
+                .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
+                .map((event, index) => (
+                  <p 
+                    key={index} 
+                    className="popup-item" 
+                    onClick={() => handleEventClick({ event })}
+                  >
+                    <span className="font-semibold">{event.title}</span>
+                    <span className="font-weight bold text-sm text-gray-400 ml-2">
+                      {new Date(event.start).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    </span>
+                  </p>
+                ))}
+            </div>
+          )}
 
           </div>
 
@@ -347,9 +347,6 @@ const CalendarComponent = () => {
 
 
         </div>
-
-
-
 
 
 
@@ -494,9 +491,15 @@ const CalendarComponent = () => {
           {/* Sidebar for tasks */}
           <div className="sidebar">
             <button className="add-task-button" onClick={() => setShowEventForm(true)}>
-              + Add
+              + Add Event
             </button>
-            <h2 className="sidebar-title">Agenda</h2>
+            {/* Pills to filter the  */}
+            <div className="pill-container">
+            <button className="px-4 py-2 bg-[#1a252f] text-white rounded-full hover:bg-[#162029]">All</button>
+            <button className="px-4 py-2 bg-[#1a252f] text-white rounded-full hover:bg-[#162029]">Recommended</button>
+            <button className="px-4 py-2 bg-[#1a252f] text-white rounded-full hover:bg-[#162029]">Today</button>
+
+            </div>
             <ul className="task-list">
               {upcomingEvents.map((event, index) => (
                 <li 
@@ -508,15 +511,6 @@ const CalendarComponent = () => {
                   <span>{new Date(event.start).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>
                 </li>
               ))}
-            </ul>
-
-            <h2 className="sidebar-title">Recommended</h2>
-            <ul className="task-list">
-              {/*tasks.map((task, index) => (
-                <li key={index} className="task-item">
-                  {task.title}
-                </li>
-              ))*/}
             </ul>
           </div>
           <div className="calendar-container">
