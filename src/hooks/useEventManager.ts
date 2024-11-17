@@ -116,10 +116,6 @@ const useEventManager = () => {
           Title: ${formattedEvent.title}.
           Description: ${formattedEvent.description || 'No description'}.
           Category: ${formattedEvent.category || 'Uncategorized'}.
-          Priority: ${formattedEvent.priority || 'No priority'}.
-          Completion: ${formattedEvent.completion ? 'Completed' : 'Pending'}.
-          Event Creation Time: ${formattedEvent.event_creation_time}.
-          Date Interval: From ${new Date(newEvent.start).toISOString()} to ${new Date(newEvent.end).toISOString()}.
         `;
         generateAndStoreEmbeddings(inputText, data[0].task_id);
       }
@@ -141,12 +137,9 @@ const useEventManager = () => {
       throw new Error('Generated embedding does not match the expected dimension (384).');
     }      
     const embeddingResponse = await supabase
-      .from('task_embeddings')
-      .insert({
-        task_id: task_id, 
-        user_id: session?.user.id,
-        embedding: embeddingVector,
-      });
+      .from('task_log')
+      .update({ embedding: embeddingVector }) 
+      .eq('task_id', task_id); 
     if (embeddingResponse.error) {
       console.error('Error saving embedding to task_embeddings:', embeddingResponse.error);
     } else {
