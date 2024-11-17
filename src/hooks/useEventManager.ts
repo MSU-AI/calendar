@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
 import supabase from '@/hooks/supabaseClient';
+import { pipeline } from '@xenova/transformers'
 
 export interface EventExtendedProps {
   description: string;
@@ -24,7 +25,6 @@ const useEventManager = () => {
   const [session, setSession] = useState<Session | null>(null);
 
   const fetchEventsForUser = useCallback(async (userId: any) => {
-    //console.log("fetchEventsForUser called with userId:", userId);
     try {
       const { data, error } = await supabase
         .from('task_log')
@@ -53,9 +53,10 @@ const useEventManager = () => {
     }
   }, []);
 
+  // Fetches current events in local storage
+  // If user is logged in (session active), fetches events from Supabase 
   useEffect(() => {
     const savedEvents: CalendarEvent[] = JSON.parse(localStorage.getItem('events') || '[]');
-    // console.log("heres", savedEvents)
     setEvents(savedEvents);
     const fetchSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -67,23 +68,20 @@ const useEventManager = () => {
     fetchSession();
   }, [fetchEventsForUser]);
 
-  // locally store events and save to local storage
+  // Locally store events and save to local storage
   const saveEventsLocally = (updatedEvents: CalendarEvent[]) => {
     setEvents(updatedEvents);
     localStorage.setItem('events', JSON.stringify(updatedEvents));
   };
 
-  // store new event to local storage and save to Supabase (unused.)
+  // Store new event to local storage and save to Supabase 
   const saveNewEvent = async (newEvent: CalendarEvent) => {
     if (!session) {
       console.error('No active session found. Cannot save event.');
       return;
     }
 
-    const eventStart = new Date(newEvent.start);
-    eventStart.setHours(15, 30, 0); 
-    const eventCreationTime = eventStart
-    .toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    // format event for insertion into Supabase
     const formattedEvent = {
       user_id: session.user.id,
       title: newEvent.title,
@@ -100,6 +98,8 @@ const useEventManager = () => {
       priority: newEvent.extendedProps.priority || '',
     };
 
+    // push event into supabase and save to local storage
+    // then generate and store embeddings for the event
     try {
       const { data, error } = await supabase
         .from('task_log')
@@ -111,13 +111,50 @@ const useEventManager = () => {
       } else if (data) {
         const newEventWithId = { ...newEvent, id: data[0].task_id };
         saveEventsLocally([...events, newEventWithId]);
+        
+        const inputText = `
+          Title: ${formattedEvent.title}.
+          Description: ${formattedEvent.description || 'No description'}.
+          Category: ${formattedEvent.category || 'Uncategorized'}.
+          Priority: ${formattedEvent.priority || 'No priority'}.
+          Completion: ${formattedEvent.completion ? 'Completed' : 'Pending'}.
+          Event Creation Time: ${formattedEvent.event_creation_time}.
+          Date Interval: From ${new Date(newEvent.start).toISOString()} to ${new Date(newEvent.end).toISOString()}.
+        `;
+        generateAndStoreEmbeddings(inputText, data[0].task_id);
       }
     } catch (error) {
       console.error('Exception caught while saving event:', error);
     }
   };
 
-  // delete event from supabase and local storage
+  // Generate and Store Embeddings in the table on supabase.
+  // Called after creating a new event and event was sucessfully stored on Supabase.
+  const generateAndStoreEmbeddings = async (inputText: string, task_id: any) => {
+    const generateEmbedding = await pipeline('feature-extraction', 'Supabase/gte-small');
+    const embeddingOutput = await generateEmbedding(inputText, {
+      pooling: 'mean',
+      normalize: true,
+    });
+    const embeddingVector = Array.from(embeddingOutput.data);
+    if (embeddingVector.length !== 384) {
+      throw new Error('Generated embedding does not match the expected dimension (384).');
+    }      
+    const embeddingResponse = await supabase
+      .from('task_embeddings')
+      .insert({
+        task_id: task_id, 
+        user_id: session?.user.id,
+        embedding: embeddingVector,
+      });
+    if (embeddingResponse.error) {
+      console.error('Error saving embedding to task_embeddings:', embeddingResponse.error);
+    } else {
+      console.log('Embedding successfully saved for task ID:', task_id);
+    }
+  }
+
+  // Delete event from supabase and local storage
   const deleteEvent = async (eventId: string | number) => {
     const formattedEventId = typeof eventId === 'string' ? parseInt(eventId) : eventId;
   
@@ -149,9 +186,8 @@ const useEventManager = () => {
     saveEventsLocally(updatedEvents);
   };
   
-  
-
-  // store all events to local storage and save to Supabase (currently unused)
+  // Store all events to local storage and save to Supabase 
+  // UNUSED in current implementation
   const syncEventsWithBackend = async () => {
     if (!session) {
       console.error('No active session found. Cannot sync events.');
