@@ -327,3 +327,31 @@
 .fc .fc-button.fc-button-active {
     @apply bg-green-600 text-white;
 }
+
+/*Popup*/
+#dropdown-menu-settings
+{
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: #1a252f; /* Match your program background */
+  border: 1px solid #162029;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Ensure it appears above the calendar */
+  padding: 8px;
+  width: 200px;
+}
+#dropdown-import-btn, #dropdown-export-btn
+{
+    display: block;
+    width: 100%;
+    padding: 10px;
+    color: white;
+    text-align: left;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+   
+}

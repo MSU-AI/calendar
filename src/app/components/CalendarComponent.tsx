@@ -29,6 +29,8 @@ const CalendarComponent = () => {
   const memoizedFetchEventsForUser = useCallback(fetchEventsForUser, []);
   //console.log("memoizedFetchEventsForUser reference updated:", memoizedFetchEventsForUser);
 
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+
   useEffect(() => {
     //console.log("CalendarComponent useEffect triggered");
     //console.log("Events:", events);
@@ -244,6 +246,10 @@ const CalendarComponent = () => {
      .filter((event) => new Date(event.start) >= today)
      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
+    const toggleSettingsDropdown = () => {
+    setShowSettingsDropdown((prev) => !prev);
+  };
+
 
   return (
     <div id='screen-background'>
@@ -287,32 +293,24 @@ const CalendarComponent = () => {
               <button
                 className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
                 style={{ fontFamily: 'Inter, sans-serif' }}
-                onClick={handleExport}
+                onClick={toggleSettingsDropdown}
               >
                 Settings
               </button>
+              {/* Dropdown Menu */}
+              {showSettingsDropdown && (
+                <div id='dropdown-menu-settings' className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                  
+                  <button id='dropdown-export-btn'
+                    className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left"
+                    onClick={handleExport}
+                  >
+                    Export
+                  </button>
+                </div>
+              )}
 
-            {/*
-              <button
-                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-                onClick={handleExport}
-              >
-                Export Events
-              </button>
-              <label
-                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800 cursor-pointer"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              >
-                Import Events
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImport}
-                  className="hidden"
-                />
-              </label>
-              */}
+            
             </div>
 
           </div>
@@ -321,13 +319,6 @@ const CalendarComponent = () => {
         </div>
 
         <div className="flex items-center">
-
-          {/*<button id='add-event-button'
-          className="px-6 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-300 ease-in-out"
-          onClick={() => setShowEventForm(true)}
-        >
-          + Add 
-        </button>*/}
 
           <h1 id="logo-bold-ui" className="mt-2 text-2xl font-bold">almanac</h1>
 
