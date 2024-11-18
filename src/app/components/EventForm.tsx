@@ -49,12 +49,14 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
         onSubmit={handleSubmit}
         className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md space-y-6 text-white"
       >
-        <h2 className="text-2xl font-semibold mb-4">
+        {/**
+         * <h2 className="text-2xl font-semibold mb-4">
           {initialData ? "Edit Event" : "Add New Event"}
         </h2>
-
+         */}
+        
         <div className="flex flex-col space-y-2">
-          <label className="text-gray-300 font-medium">Title:</label>
+          {/*<label className="text-gray-300 font-medium">Title:</label>*/}
           <input
             type="text"
             value={title}
@@ -65,7 +67,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
         </div>
 
         <div className="flex flex-col space-y-2">
-          <label className="text-gray-300 font-medium">Description:</label>
+          {/*<label className="text-gray-300 font-medium">Description:</label>*/}
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -108,6 +110,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             onCheckedChange={(checked) => setCompletion(!!checked)}
             className="text-blue-500"
           />
+        
           <div className="grid gap-1.5 leading-none">
             <label
               htmlFor="completion"
@@ -117,6 +120,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             </label>
             <p className="text-sm text-gray-400">Mark as completed if the event is finished.</p>
           </div>
+
         </div>
 
         <div className="flex justify-end space-x-4 mt-4">

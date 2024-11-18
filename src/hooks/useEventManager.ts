@@ -73,7 +73,10 @@ const useEventManager = () => {
     localStorage.setItem('events', JSON.stringify(updatedEvents));
   };
 
-  // store new event to local storage and save to Supabase (unused.)
+  //add an event for handling the creation of a new event for the recommendation section 
+  
+
+  // store new event to local storage and save to Supabase
   const saveNewEvent = async (newEvent: CalendarEvent) => {
     if (!session) {
       console.error('No active session found. Cannot save event.');
