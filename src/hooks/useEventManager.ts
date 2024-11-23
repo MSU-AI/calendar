@@ -122,7 +122,9 @@ const useEventManager = () => {
     } catch (error) {
       console.error('Exception caught while saving event:', error);
     }
-  };
+  }; 
+  //figure out how to connect the supabase to the model, button, select user then the embeddings, push to model, might need to do it periodically, so make it so that 
+  // 
 
   // Generate and Store Embeddings in the table on supabase.
   // Called after creating a new event and event was sucessfully stored on Supabase.

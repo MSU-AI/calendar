@@ -375,8 +375,6 @@ const CalendarComponent = () => {
 
         </div>
 
-
-
         {showEventForm && (
           <EventForm
             onSave={handleSaveEvent}
