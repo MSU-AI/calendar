@@ -37,6 +37,14 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
     }
   }, [initialData]);
 
+   // Prevent scrolling when the modal is open
+   useEffect(() => {
+    document.body.classList.add("modal-open");
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({ title, description, start, end, category, completion });
@@ -44,6 +52,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
   };
 
   return (
+    <div className="modal-container">
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
       <form
         onSubmit={handleSubmit}
@@ -61,7 +70,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+            className="border-b border-gray-600 bg-transparent focus:outline-none focus:border-blue-500 text-white placeholder-gray-400"
             placeholder="Enter event title"
           />
         </div>
@@ -71,20 +80,28 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+            className="border-b border-gray-600 bg-transparent focus:outline-none focus:border-blue-500 text-white placeholder-gray-400"
             placeholder="Enter event description"
-            rows={3}
+           rows={5}
           />
         </div>
+        
+        
+        <div className="flex flex-col space-y-2">
+          {/*<label className="text-gray-300 font-medium">Category:</label>*/}
+          <CategoryDropdown selectedCategory={category} onCategoryChange={setCategory} />
+        </div>
 
+        {/*
         <div className="flex flex-col space-y-2">
           <label className="text-gray-300 font-medium">Start Date:</label>
           <input
             type="datetime-local"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="block w-full border border-gray-300 bg-white rounded-md px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition ease-in-out"
           />
+          
         </div>
 
         <div className="flex flex-col space-y-2">
@@ -93,16 +110,42 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             type="datetime-local"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            className="border border-gray-300 bg-transparent text-gray-700 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition ease-in-out"
+          />
+        </div>*/}
+        {/* Start Date */}
+       
+        <div>
+          <label htmlFor="start-date" className="block mb-1 text-sm text-gray-400">
+            Start Date
+          </label>
+          <input
+            id="start-date"
+            type="datetime-local"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            className="w-full px-4 py-2 text-sm font-medium text-gray-300 bg-slate-800 border border-gray-700 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
-        <div className="flex flex-col space-y-2">
-          <label className="text-gray-300 font-medium">Category:</label>
-          <CategoryDropdown selectedCategory={category} onCategoryChange={setCategory} />
+        {/* End Date */}
+        <div>
+          <label htmlFor="end-date" className="block mb-1 text-sm text-gray-400">
+            End Date
+          </label>
+          <input
+            id="end-date"
+            type="datetime-local"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            className="w-full px-4 py-2 text-sm font-medium text-gray-300 bg-slate-800 border border-gray-700 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
         </div>
 
+        
+
         {/* Completion Checkbox */}
+        {/*}
         <div className="flex items-top space-x-2">
           <Checkbox
             id="completion"
@@ -111,6 +154,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             className="text-blue-500"
           />
         
+
           <div className="grid gap-1.5 leading-none">
             <label
               htmlFor="completion"
@@ -122,23 +166,28 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
           </div>
 
         </div>
+            */}
 
-        <div className="flex justify-end space-x-4 mt-4">
+        <div className="flex justify-between mt-6">
+          {/* Cancel Button */}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-gray-600 text-gray-200 rounded-lg hover:bg-gray-500 transition duration-200"
+            className="px-4 py-2 border border-gray-500 text-gray-300 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             Cancel
           </button>
+
+          {/* Create Button */}
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition duration-200"
+            className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
-            Save
+            Create Event
           </button>
         </div>
       </form>
+    </div>
     </div>
   );
 };
