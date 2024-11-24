@@ -257,8 +257,36 @@ const CalendarComponent = () => {
 
       <div className="relative">
         <div className="flex items-center justify-between mb-4">
+          
           <div className="absolute top-0 right-0 flex items-center space-x-4 mt-4 mr-4">
+          <div className="flex space-x-2">
+              {/*Will change for making a settings button to hold these values */}
+              <button className='px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800' onClick={() => setShowEventForm(true)}>
+                +
+              </button>
+              
+              <button
+                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                onClick={toggleSettingsDropdown}
+              >
+                Settings
+              </button>
+              {/* Dropdown Menu */}
+              {showSettingsDropdown && (
+                <div id='dropdown-menu-settings' className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                  
+                  <button id='dropdown-export-btn'
+                    className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left"
+                    onClick={handleExport}
+                  >
+                    Export
+                  </button>
+                </div>
+              )}
+
             
+            </div>
             {session ? (
               <>
                 <div className="flex items-center space-x-2">
@@ -288,30 +316,7 @@ const CalendarComponent = () => {
               </button>
             )}
 
-            <div className="flex space-x-2">
-              {/*Will change for making a settings button to hold these values */}
-              <button
-                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-                onClick={toggleSettingsDropdown}
-              >
-                Settings
-              </button>
-              {/* Dropdown Menu */}
-              {showSettingsDropdown && (
-                <div id='dropdown-menu-settings' className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-                  
-                  <button id='dropdown-export-btn'
-                    className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left"
-                    onClick={handleExport}
-                  >
-                    Export
-                  </button>
-                </div>
-              )}
-
-            
-            </div>
+           
 
           </div>
 
@@ -319,6 +324,8 @@ const CalendarComponent = () => {
         </div>
 
         <div className="flex items-center">
+
+          
 
           <h1 id="logo-bold-ui" className="mt-2 text-2xl font-bold">almanac</h1>
 
@@ -374,6 +381,7 @@ const CalendarComponent = () => {
 
 
         </div>
+        
 
         {showEventForm && (
           <EventForm
@@ -515,9 +523,11 @@ const CalendarComponent = () => {
         <div className="calendar-layout">
           {/* Sidebar for tasks */}
           <div className="sidebar">
-            <button className="add-task-button" onClick={() => setShowEventForm(true)}>
-              + Add Event
+            <button className="add-task-button">
+              Recommend
             </button>
+
+            
             {/* Pills to filter the  */}
             <div className="pill-container">
             <button className="px-4 py-2 bg-[#1a252f] text-white rounded-full hover:bg-[#162029]">All</button>

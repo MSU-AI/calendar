@@ -355,3 +355,13 @@
     transition: background-color 0.2s ease-in-out;
    
 }
+
+.add-event-button {
+    
+    border: 1px solid black;
+    padding: 5px 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+    padding: auto;
+}
