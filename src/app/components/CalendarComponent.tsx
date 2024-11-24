@@ -261,12 +261,9 @@ const CalendarComponent = () => {
           <div className="absolute top-0 right-0 flex items-center space-x-4 mt-4 mr-4">
           <div className="flex space-x-2">
               {/*Will change for making a settings button to hold these values */}
-              <button className='px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800' onClick={() => setShowEventForm(true)}>
-                + Add
-              </button>
               
               <button
-                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800"
+                className="px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800 "
                 style={{ fontFamily: 'Inter, sans-serif' }}
                 onClick={toggleSettingsDropdown}
               >
@@ -523,8 +520,8 @@ const CalendarComponent = () => {
         <div className="calendar-layout">
           {/* Sidebar for tasks */}
           <div className="sidebar">
-            <button className="add-task-button">
-              Recommend
+            <button className="add-task-button" onClick={() => setShowEventForm(true)}>
+              + Add Event 
             </button>
 
             
