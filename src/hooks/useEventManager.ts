@@ -11,6 +11,7 @@ export interface EventExtendedProps {
 }
 
 export interface CalendarEvent {
+  isRecommend?: boolean;
   id?: string; 
   user_id?: string; 
   title: string;
@@ -106,12 +107,19 @@ const useEventManager = () => {
         .insert([formattedEvent]) 
         .select();
 
+
+
       if (error) {
         console.error('Error saving new event to Supabase:', error);
-      } else if (data) {
+      }
+      
+      if (data && data.length > 0) {
         const newEventWithId = { ...newEvent, id: data[0].task_id };
+
         saveEventsLocally([...events, newEventWithId]);
-        
+
+        //if the event is recommend, then upcall the modal and break out of the function
+
         const inputText = `
           Title: ${formattedEvent.title}.
           Description: ${formattedEvent.description || 'No description'}.
@@ -149,6 +157,107 @@ const useEventManager = () => {
     }
   }
 
+  // send it to the modal to be able to recommend the task
+
+  const recommendEvents = async (taskId: number, userId: string) => {
+    try {
+      const { data, error } = await supabase.rpc("recommend_task", {
+        task_id: taskId,
+        user_id: userId,
+      });
+  
+      if (error) {
+        console.error("Error fetching recommendations:", error);
+        return [];
+      }
+  
+      return data; // Recommended events
+    } catch (err) {
+      console.error("Exception while fetching recommendations:", err);
+      return [];
+    }
+  };
+  
+  const createRecommendedEvent = async (originalEvent: any) => {
+    if (!session?.user.id) {
+      console.error('User session is required to create a recommended event.');
+      return;
+    }
+  
+    try {
+      const { data: recommendedEvents, error: rpcError } = await supabase.rpc('recommend_task', {
+        task_id: originalEvent.id, 
+        user_id: session.user.id, 
+      });
+  
+      if (rpcError) {
+        console.error('Error fetching recommended events:', rpcError);
+        return;
+      }
+  
+      if (!recommendedEvents || recommendedEvents.length === 0) {
+        console.warn('No similar events found.');
+        return;
+      }
+  
+      const mostSimilarEvent = recommendedEvents[0]; // Pick the most similar event
+      console.log('Most similar event:', mostSimilarEvent);
+      const originalStart = new Date(mostSimilarEvent.date_interval[0]); // Extract start time
+      const originalEnd = new Date(mostSimilarEvent.date_interval[1]); // Extract end time
+  
+      const inferredStart = new Date(originalStart.getTime() + 7 * 24 * 60 * 60 * 1000); // 1 week later
+      const inferredEnd = new Date(originalEnd.getTime() + 7 * 24 * 60 * 60 * 1000); // Match duration
+
+      console.log('Timestart/end', inferredStart, inferredEnd);
+
+      const similarEvent: CalendarEvent = {
+        id: undefined, // Will be assigned after saving to Supabase
+        user_id: session.user.id,
+        title: `Similar to: ${mostSimilarEvent.title}`,
+        start: inferredStart,
+        end: inferredEnd,
+        extendedProps: {
+          description: mostSimilarEvent.description || '',
+          category: mostSimilarEvent.category || '',
+          completion: false, // Default to not completed
+          priority: mostSimilarEvent.priority || '',
+        },
+      };
+  
+      // Step 4: Save the recommended event into `task_log`
+      const { data: newEvent, error: insertError } = await supabase
+        .from('task_log')
+        .insert([
+          {
+            user_id: session.user.id,
+            title: similarEvent.title,
+            category: similarEvent.extendedProps.category,
+            description: similarEvent.extendedProps.description,
+            date_interval: `[${inferredStart.toISOString()}, ${inferredEnd.toISOString()}]`,
+            event_creation_time: new Date().toISOString(),
+            completion: similarEvent.extendedProps.completion,
+            priority: similarEvent.extendedProps.priority,
+          },
+        ])
+        .select('task_id'); // Explicitly fetch `task_id`
+  
+      if (insertError) {
+        console.error('Error saving recommended event:', insertError);
+      } else if (newEvent && newEvent.length > 0) {
+        console.log('Recommended event created:', newEvent);
+  
+        const savedEvent: CalendarEvent = {
+          ...similarEvent,
+          id: newEvent[0].task_id, // Assign the ID from Supabase
+        };
+  
+        saveEventsLocally([...events, savedEvent]); // Save to local state
+      }
+    } catch (error) {
+      console.error('Exception while creating recommended event:', error);
+    }
+  };
+  
   // Delete event from supabase and local storage
   const deleteEvent = async (eventId: string | number) => {
     const formattedEventId = typeof eventId === 'string' ? parseInt(eventId) : eventId;
@@ -217,7 +326,7 @@ const useEventManager = () => {
     }
   };
 
-  return { events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent };
+  return { events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent, createRecommendedEvent };
 };
 
 export default useEventManager;

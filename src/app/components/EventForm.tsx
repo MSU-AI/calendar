@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CategoryDropdown } from "@/components/ui/category-dropdown";
 
+
+// logic for the event form if the event is on edit mode, then the is completed button will be shown
+
+
 interface Event {
   title: string;
   description: string;
@@ -9,22 +13,26 @@ interface Event {
   end: string;
   category: string;
   completion: boolean;
+  isRecommend: boolean;
 }
 
 interface EventFormProps {
   onSave: (event: Event) => void;
   onClose: () => void;
   initialData?: Partial<Event>; // initial data (optional)
+  isEditMode?: boolean; // Add isEditMode prop
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) => {
+const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData , isEditMode = false}) => {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [start, setStart] = useState(initialData?.start || "");
   const [end, setEnd] = useState(initialData?.end || "");
   const [category, setCategory] = useState(initialData?.category || "");
   const [completion, setCompletion] = useState(initialData?.completion || false);
+  const [isRecommend, setIsRecommend] = useState(initialData?.isRecommend || false);
 
+  
   // Only run this effect once when the component mounts or when initialData changes
   useEffect(() => {
     if (initialData) {
@@ -34,6 +42,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
       setEnd(initialData.end || "");
       setCategory(initialData.category || ""); // Set initial category only
       setCompletion(initialData.completion || false);
+      setIsRecommend(initialData.isRecommend || false);
     }
   }, [initialData]);
 
@@ -47,8 +56,12 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ title, description, start, end, category, completion });
+    onSave({ title, description, start, end, category, completion, isRecommend });
     onClose();
+  };
+
+  const handleRecommendToggle = () => {
+    setIsRecommend(!isRecommend);
   };
 
   return (
@@ -63,7 +76,8 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
           {initialData ? "Edit Event" : "Add New Event"}
         </h2>
          */}
-        
+         
+      
         <div className="flex flex-col space-y-2">
           {/*<label className="text-gray-300 font-medium">Title:</label>*/}
           <input
@@ -85,6 +99,10 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
            rows={5}
           />
         </div>
+
+        
+
+
         
         
         <div className="flex flex-col space-y-2">
@@ -92,81 +110,71 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
           <CategoryDropdown selectedCategory={category} onCategoryChange={setCategory} />
         </div>
 
-        {/*
         <div className="flex flex-col space-y-2">
-          <label className="text-gray-300 font-medium">Start Date:</label>
-          <input
-            type="datetime-local"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-            className="block w-full border border-gray-300 bg-white rounded-md px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition ease-in-out"
-          />
-          
-        </div>
+            <label className="relative flex items-center space-x-2 text-white font-bold">
+              Recommend
+              <input
+                type="checkbox"
+                checked={isRecommend}
+                onChange={handleRecommendToggle}
+                className="absolute left-1/2 -translate-x-1/2 w-full h-full peer appearance-none rounded-md"
+              />
+              <span className={`w-12 h-6 flex items-center flex-shrink-0 ml-2 p-1 rounded-full duration-300 ease-in-out after:w-5 after:h-5 after:rounded-full after:shadow-md after:duration-300 ${
+                isRecommend 
+                  ? 'bg-blue-700 after:translate-x-5 after:bg-white' 
+                  : 'bg-gray-600 after:bg-white'
+              }`}></span>
+            </label>
+          </div>
 
-        <div className="flex flex-col space-y-2">
-          <label className="text-gray-300 font-medium">End Date:</label>
-          <input
-            type="datetime-local"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-            className="border border-gray-300 bg-transparent text-gray-700 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition ease-in-out"
-          />
-        </div>*/}
         {/* Start Date */}
-       
-        <div>
-          <label htmlFor="start-date" className="block mb-1 text-sm text-gray-400">
-            Start Date
-          </label>
-          <input
-            id="start-date"
-            type="datetime-local"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-            className="w-full px-4 py-2 text-sm font-medium text-gray-300 bg-slate-800 border border-gray-700 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          />
-        </div>
-
-        {/* End Date */}
-        <div>
-          <label htmlFor="end-date" className="block mb-1 text-sm text-gray-400">
-            End Date
-          </label>
-          <input
-            id="end-date"
-            type="datetime-local"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-            className="w-full px-4 py-2 text-sm font-medium text-gray-300 bg-slate-800 border border-gray-700 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          />
-        </div>
+       { !isRecommend && (
+        <>
+          <div>
+            <label htmlFor="start-date" className="block mb-1 text-sm text-gray-400">
+              Start Date
+            </label>
+            <input
+              id="start-date"
+              type="datetime-local"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              className="w-full px-4 py-2 text-sm font-medium text-gray-300 bg-slate-800 border border-gray-700 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+          <div>
+            <label htmlFor="end-date" className="block mb-1 text-sm text-gray-400">
+              End Date
+            </label>
+            <input
+              id="end-date"
+              type="datetime-local"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              className="w-full px-4 py-2 text-sm font-medium text-gray-300 bg-slate-800 border border-gray-700 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+        </>
+       )}
 
         
 
         {/* Completion Checkbox */}
-        {/*}
-        <div className="flex items-top space-x-2">
-          <Checkbox
-            id="completion"
-            checked={completion}
-            onCheckedChange={(checked) => setCompletion(!!checked)}
-            className="text-blue-500"
-          />
-        
-
-          <div className="grid gap-1.5 leading-none">
-            <label
-              htmlFor="completion"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-300"
-            >
-              Completed?
+        {/* isCompleted Section (Visible Only in Edit Mode) */}
+        {isEditMode && (
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="completion"
+              checked={completion}
+              onChange={(e) => setCompletion(e.target.checked)}
+              className="form-checkbox"
+            />
+            <label htmlFor="completion" className="text-sm font-medium text-white">
+              Mark as Completed
             </label>
-            <p className="text-sm text-gray-400">Mark as completed if the event is finished.</p>
           </div>
-
-        </div>
-            */}
+        )}
 
         <div className="flex justify-between mt-6">
           {/* Cancel Button */}
@@ -183,7 +191,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData }) =
             type="submit"
             className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
-            Create Event
+            {isEditMode ? 'Save Changes' : 'Create Event'}
           </button>
         </div>
       </form>

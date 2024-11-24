@@ -8,8 +8,8 @@ import EventForm from './EventForm';
 import LoginPage from '../auth/login/page';
 import './CalendarComponent.css';
 
-import { Session } from '@supabase/supabase-js';
 
+import { Session } from '@supabase/supabase-js';
 import supabase from '@/hooks/supabaseClient';
 import useEventManager from '@/hooks/useEventManager';
 
@@ -22,14 +22,45 @@ const CalendarComponent = () => {
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const {events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent } = useEventManager();
+  const {events, setEvents, saveEventsLocally, saveNewEvent, fetchEventsForUser, deleteEvent, createRecommendedEvent } = useEventManager();
   const [search, setSearch] = useState(''); 
   const [showPopup, setShowPopup] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null); 
   const memoizedFetchEventsForUser = useCallback(fetchEventsForUser, []);
   //console.log("memoizedFetchEventsForUser reference updated:", memoizedFetchEventsForUser);
 
+  //events for filtering the calendar 
+  const [showAllEvents, setShowAllEvents] = useState(true);
+  const [showTodayEvents, setShowTodayEvents] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  const toggleAllEvents = () => {
+    setShowAllEvents(true);
+    setShowTodayEvents(false);
+  };
+
+  const toggleTodayEvents = () => {
+    setShowTodayEvents(true);
+    setShowAllEvents(false);
+  };
+
+  //filter events
+  const getFilteredEvents = () => {
+    if (showTodayEvents) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      return events.filter(event => {
+        const eventDate = new Date(event.start);
+        eventDate.setHours(0, 0, 0, 0);
+        return eventDate.getTime() === today.getTime();
+      });
+    }
+    return events; // Show all events when showAllEvents is true
+  };
+
+  
 
   useEffect(() => {
     //console.log("CalendarComponent useEffect triggered");
@@ -57,7 +88,7 @@ const CalendarComponent = () => {
   }, [memoizedFetchEventsForUser]);
 
 
-  const handleSaveEvent = (newEvent: any) => {
+  const handleSaveEvent = async (newEvent: any) => {
     const createFormattedEvent = (event: any) => ({
       id: `${Date.now()}-${Math.floor(Math.random() * 100000)}`,
       title: event.title,
@@ -69,6 +100,7 @@ const CalendarComponent = () => {
         completion: typeof event.completion === 'boolean' ? event.completion : false,
         priority: event.priority || '',
       },
+      isRecommend: event.isRecommend || false,
     });
   
     const updateEvent = (existingEvent: any, updatedEvent: any) => ({
@@ -85,6 +117,7 @@ const CalendarComponent = () => {
           : existingEvent.extendedProps.completion,
         priority: updatedEvent.priority || existingEvent.extendedProps.priority, 
       },
+      isRecommend: updatedEvent.isRecommend || existingEvent.isRecommend,
     });
   
     let updatedEvents;
@@ -96,7 +129,15 @@ const CalendarComponent = () => {
     } else {
       const formattedEvent = createFormattedEvent(newEvent);
       updatedEvents = [...events, formattedEvent];
-      saveNewEvent(formattedEvent)
+
+      if (formattedEvent.isRecommend) {
+        await createRecommendedEvent(formattedEvent); // Call createRecommendedEvent for recommended events
+        console.log("Recommended event created successfully.");
+        
+      } else {
+        saveNewEvent(formattedEvent); // Save as a regular event
+      }
+
     }
   
     saveEventsLocally(updatedEvents);
@@ -324,7 +365,7 @@ const CalendarComponent = () => {
 
           
 
-          <h1 id="logo-bold-ui" className="mt-2 text-2xl font-bold">almanac</h1>
+          <h1 id="logo-bold-ui" className="mt-2 text-2xl font-bold">potentially</h1>
 
 
           <div className="search-container" ref={searchContainerRef}>
@@ -373,10 +414,6 @@ const CalendarComponent = () => {
           )}
 
           </div>
-
-
-
-
         </div>
         
 
@@ -399,90 +436,104 @@ const CalendarComponent = () => {
                       typeof editEvent.extendedProps?.completion === 'boolean'
                         ? editEvent.extendedProps.completion
                         : false, // Include completion
+                    isRecommend: editEvent.recommended || false,
                   }
                 : slotInfo
                 ? {
                     start: slotInfo.start ? formatDateForInput(new Date(slotInfo.start)) : '',
                     end: slotInfo.end ? formatDateForInput(new Date(slotInfo.end)) : '',
+                    isRecommend: false,
                   }
                 : undefined
             }
+            isEditMode={!!editEvent} // Pass true if editing
+
           />
         )}
 
 
-        {selectedEvent && (
-          <div  className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
-            <div id='event-details-tag-2' className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md text-white space-y-4">
-              {/*<h2 className="text-2xl font-semibold mb-4">Event Details</h2>*/}
-              <div className="flex justify-end space-x-4">
+{selectedEvent && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+    <div
+      id="event-details-tag-2"
+      className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md text-white space-y-4"
+    >
+      {/* Close Button */}
+      <button
+          
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition duration-200"
+          aria-label="Close"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
-                <button
-                  onClick={closeEventDescription}
-                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition duration-200"
-                >
-                  Close
-                </button>
-              </div>
-              <div className="space-y-2">
-                <p className="text-lg">
-                  <strong>Title:</strong> {selectedEvent.title || 'No title specified'}
-                </p>
-                <p className="text-lg">
-                  <strong>Start:</strong>{' '}
-                  {selectedEvent.start
-                    ? new Date(selectedEvent.start).toLocaleString([], {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })
-                    : 'No start time specified'}
-                </p>
-                <p className="text-lg">
-                  <strong>End:</strong>{' '}
-                  {selectedEvent.end
-                    ? new Date(selectedEvent.end).toLocaleString([], {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })
-                    : 'No end time specified'}
-                </p>
-                {selectedEvent.extendedProps.description && (
-                  <p className="text-lg">
-                    <strong>Description:</strong> {selectedEvent.extendedProps.description}
-                  </p>
-                )}
-                {selectedEvent.extendedProps.category && (
-                  <p className="text-lg">
-                    <strong>Category:</strong> {selectedEvent.extendedProps.category}
-                  </p>
-                )}
-                <p className="text-lg">
-                  <strong>Completion:</strong>{' '}
-                  {selectedEvent.extendedProps.completion ? 'Yes' : 'No'}
-                </p>
-              </div>
-
-              <div id='delete-event-details-btns' className="flex justify-end space-x-4">
-                <button 
-                  onClick={handleDeleteEvent}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition duration-200"
-                >
-                  Delete
-                </button>
-
-                <button
-                  onClick={handleEditEvent}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition duration-200"
-                >
-                  Edit
-                </button>
-
-                
-              </div>
-              
-            </div>
-          </div>
+      {/* Event Details */}
+      <div className="space-y-2">
+        <p className="text-lg">
+          <strong>Title:</strong> {selectedEvent.title || "No title specified"}
+        </p>
+        <p className="text-lg">
+          <strong>Start:</strong>{" "}
+          {selectedEvent.start
+            ? new Date(selectedEvent.start).toLocaleString([], {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })
+            : "No start time specified"}
+        </p>
+        <p className="text-lg">
+          <strong>End:</strong>{" "}
+          {selectedEvent.end
+            ? new Date(selectedEvent.end).toLocaleString([], {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })
+            : "No end time specified"}
+        </p>
+        {selectedEvent.extendedProps.description && (
+          <p className="text-lg">
+            <strong>Description:</strong> {selectedEvent.extendedProps.description}
+          </p>
         )}
+        {selectedEvent.extendedProps.category && (
+          <p className="text-lg">
+            <strong>Category:</strong> {selectedEvent.extendedProps.category}
+          </p>
+        )}
+        <p className="text-lg">
+          <strong>Completion:</strong>{" "}
+          {selectedEvent.extendedProps.completion ? "Yes" : "No"}
+        </p>
+      </div>
+
+      {/* Buttons */}
+      <div id="delete-event-details-btns" className="flex justify-between mt-6">
+        <button
+          onClick={handleDeleteEvent}
+          className="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-500 transition duration-200"
+        >
+          Delete
+        </button>
+        <button
+          onClick={handleEditEvent}
+          className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-500 transition duration-200"
+        >
+          Edit
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
 
         {showLoginModal && (
@@ -527,10 +578,25 @@ const CalendarComponent = () => {
             
             {/* Pills to filter the  */}
             <div className="pill-container">
-            <button className="px-4 py-2 bg-[#1a252f] text-white rounded-full hover:bg-[#162029]">All</button>
-            <button className="px-4 py-2 bg-[#1a252f] text-white rounded-full hover:bg-[#162029]">Recommended</button>
-            <button className="px-4 py-2 bg-[#1a252f] text-white rounded-full hover:bg-[#162029]">Today</button>
-
+              <button
+                onClick={toggleAllEvents}
+                className={`px-4 py-2 rounded-full ${
+                  showAllEvents ? 'bg-[#162029] text-white' : 'bg-[#1a252f] text-gray-400'
+                }`}
+              >
+                All
+              </button>
+              <button className="px-4 py-2 bg-[#1a252f] text-white rounded-full hover:bg-[#162029]">
+                Recommended
+              </button>
+              <button
+                onClick={toggleTodayEvents}
+                className={`px-4 py-2 rounded-full ${
+                  showTodayEvents ? 'bg-[#162029] text-white' : 'bg-[#1a252f] text-gray-400'
+                }`}
+              >
+                Today
+              </button>
             </div>
             <ul className="task-list">
               {upcomingEvents.map((event, index) => (
@@ -558,7 +624,9 @@ const CalendarComponent = () => {
                 }}
                 height="100%" // Makes FullCalendar take full height of the container
                 expandRows={true} // Ensures rows expand to fill available height
-                events={events}
+                
+                events={getFilteredEvents()} // Show all events, show only today's events
+
                 editable={true}
                 selectable={!showEventForm}
                 select={(info) => {
