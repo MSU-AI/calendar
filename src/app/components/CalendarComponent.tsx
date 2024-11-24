@@ -262,7 +262,7 @@ const CalendarComponent = () => {
           <div className="flex space-x-2">
               {/*Will change for making a settings button to hold these values */}
               <button className='px-4 py-2 bg-black text-white font-normal rounded-md shadow-sm hover:bg-gray-800' onClick={() => setShowEventForm(true)}>
-                +
+                + Add
               </button>
               
               <button
