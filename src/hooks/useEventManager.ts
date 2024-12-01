@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
 import supabase from '@/hooks/supabaseClient';
-import { pipeline } from '@xenova/transformers'
+import { cat, pipeline } from '@xenova/transformers'
 
 export interface EventExtendedProps {
   description: string;
@@ -58,7 +58,8 @@ const useEventManager = () => {
   // If user is logged in (session active), fetches events from Supabase 
   useEffect(() => {
     const savedEvents: CalendarEvent[] = JSON.parse(localStorage.getItem('events') || '[]');
-    setEvents(savedEvents);
+    console.log('Loaded events from localStorage:', savedEvents); // Debug log
+    setEvents(savedEvents); // Overwrites the `events` state
     const fetchSession = async () => {
       const { data } = await supabase.auth.getSession();
       setSession(data?.session || null);
@@ -68,6 +69,7 @@ const useEventManager = () => {
     };
     fetchSession();
   }, [fetchEventsForUser]);
+  
 
   // Locally store events and save to local storage
   const saveEventsLocally = (updatedEvents: CalendarEvent[]) => {
@@ -107,8 +109,6 @@ const useEventManager = () => {
         .insert([formattedEvent]) 
         .select();
 
-
-
       if (error) {
         console.error('Error saving new event to Supabase:', error);
       }
@@ -117,9 +117,9 @@ const useEventManager = () => {
         const newEventWithId = { ...newEvent, id: data[0].task_id };
 
         saveEventsLocally([...events, newEventWithId]);
+        
 
-        //if the event is recommend, then upcall the modal and break out of the function
-
+        // create embeddings for the event
         const inputText = `
           Title: ${formattedEvent.title}.
           Description: ${formattedEvent.description || 'No description'}.
@@ -145,7 +145,9 @@ const useEventManager = () => {
     const embeddingVector = Array.from(embeddingOutput.data);
     if (embeddingVector.length !== 384) {
       throw new Error('Generated embedding does not match the expected dimension (384).');
-    }      
+    }   
+    
+    
     const embeddingResponse = await supabase
       .from('task_log')
       .update({ embedding: embeddingVector }) 
@@ -157,26 +159,145 @@ const useEventManager = () => {
     }
   }
 
+  // function for comparing the cosine similarity of each event to the new event
+  
   // send it to the modal to be able to recommend the task
+  
+  // const recommendEvents = async (taskId: number, userId: string) => {
+  //   try {
+  //     const { data, error } = await supabase.rpc("recommend_task", {
+  //       task_id: taskId,
+  //       user_id: userId,
+  //     });
+  
+  //     if (error) {
+  //       console.error("Error fetching recommendations:", error);
+  //       return [];
+  //     }
+  
+  //     return data; // Recommended events
+  //   } catch (err) {
+  //     console.error("Exception while fetching recommendations:", err);
+  //     return [];
+  //   }
+  // };
+  
+  // Create a recommended event based on the most similar event
 
-  const recommendEvents = async (taskId: number, userId: string) => {
+  const fetchTaskId = async (originalEvent: any) => {
     try {
-      const { data, error } = await supabase.rpc("recommend_task", {
-        task_id: taskId,
-        user_id: userId,
+      // Query Supabase for the task_id using unique event properties
+      if (!session) {
+        console.error('No active session found. Cannot fetch task_id.');
+        return null;
+      }
+
+      const { data, error } = await supabase
+        .from('task_log')
+        .select('task_id')
+        .eq('title', originalEvent.title) // 
+        .eq('user_id', session.user.id) // Ensure it's scoped to the current user
+        .limit(1); // Limit to one record
+
+      if (error) {
+        console.error('Error fetching task_id from Supabase:', error);
+        return null;
+      }
+
+      if (data && data.length > 0) {
+        return data[0].task_id; // Return the task_id
+      } else {
+        console.warn('No matching task found in Supabase for the given event.');
+        return null;
+      }
+    } catch (err) {
+      console.error('Exception while fetching task_id:', err);
+      return null;
+    }
+  };
+
+  const createDraftEvent = async (title: string, placeholderCategory: string, placeholderDescription: string) => {    
+    try {
+      const eventCreationTime = new Date();
+      const formattedTime = eventCreationTime.toISOString().split('T')[1].split('.')[0]; 
+
+      const { data, error } = await supabase
+        .from('task_log')
+        .insert([
+          {
+            user_id: session?.user.id,
+            title: title || 'Temporary Event',
+            category: placeholderCategory, 
+            description: placeholderDescription,
+            date_interval: '[,)', // Placeholder for now
+            event_creation_time: formattedTime,
+            completion: false,
+            priority: '',
+          },
+        ])
+        .select('task_id');
+  
+      if (error) {
+        console.error('Error creating draft event:', error);
+        return null;
+      }
+  
+      if (data && data.length > 0) {
+        console.log('Draft event created with task_id:', data[0].task_id);
+
+        
+        const inputText = `Title: ${title || 'Temporary Event'}.
+        Description: ${placeholderDescription}.
+        Category: ${placeholderCategory}.`;
+        await generateAndStoreEmbeddings(inputText, data[0].task_id);
+        return data[0].task_id;
+      } else {
+        console.warn('Draft event creation returned no task_id.');
+        return null;
+      }
+    } catch (err) {
+      console.error('Exception while creating draft event:', err);
+      return null;
+    }
+  };
+  
+  const fetchMostSimilarEvent = async (taskId: number) => {
+    try {
+      const { data: recommendedEvents, error } = await supabase.rpc('recommend_task', {
+        input_task_id: taskId, // Updated parameter name
+        input_user_id: session?.user.id, // Updated parameter name
       });
   
       if (error) {
-        console.error("Error fetching recommendations:", error);
-        return [];
+        console.error('Error fetching recommended tasks via RPC:', error);
+        return null;
       }
   
-      return data; // Recommended events
+      if (!recommendedEvents || recommendedEvents.length === 0) {
+        console.warn('No similar tasks found.');
+        return null;
+      }
+  
+      console.log('Most similar task:', recommendedEvents[0]);
+      return recommendedEvents[0];
     } catch (err) {
-      console.error("Exception while fetching recommendations:", err);
-      return [];
+      console.error('Exception while fetching similar tasks:', err);
+      return null;
     }
   };
+  
+  const parseDateInterval = (dateInterval: string) => {
+    try {
+      const [start, end] = JSON.parse(dateInterval);
+      return {
+        start: new Date(start),
+        end: new Date(end),
+      };
+    } catch (error) {
+      throw new Error(`Invalid date_interval format: ${dateInterval}`);
+    }
+  };
+
   
   const createRecommendedEvent = async (originalEvent: any) => {
     if (!session?.user.id) {
@@ -184,80 +305,80 @@ const useEventManager = () => {
       return;
     }
   
+    // Step 1: Create a draft event
+    const draftTaskId = await createDraftEvent(originalEvent.title, originalEvent.extendedProps.category, originalEvent.extendedProps.description);
+    if (!draftTaskId) {
+      console.error('Failed to create a draft event.');
+      return;
+    }
+  
+    console.log('Draft task_id:', draftTaskId);
+  
+    // Step 2: Fetch the most similar event via RPC
+    const mostSimilarEvent = await fetchMostSimilarEvent(draftTaskId);
+  
+    if (!mostSimilarEvent) {
+      console.error('No similar event found. Cannot proceed.');
+      return;
+    }
+  
+    console.log('Most similar event:', mostSimilarEvent);
+  
+    // Step 3: Calculate new event dates based on the most similar event
     try {
-      const { data: recommendedEvents, error: rpcError } = await supabase.rpc('recommend_task', {
-        task_id: originalEvent.id, 
-        user_id: session.user.id, 
-      });
+      const [start, end] = JSON.parse(mostSimilarEvent.date_interval);
+      const originalStart = new Date(start);
+      const originalEnd = new Date(end);
   
-      if (rpcError) {
-        console.error('Error fetching recommended events:', rpcError);
-        return;
-      }
+      console.log('originalStart:', start, 'originalEnd:', end);
   
-      if (!recommendedEvents || recommendedEvents.length === 0) {
-        console.warn('No similar events found.');
-        return;
-      }
+      const inferredStart = new Date(originalStart.getTime() + 7 * 24 * 60 * 60 * 1000); // +7 days
+      const inferredEnd = new Date(originalEnd.getTime() + 7 * 24 * 60 * 60 * 1000); // +7 days
   
-      const mostSimilarEvent = recommendedEvents[0]; // Pick the most similar event
-      console.log('Most similar event:', mostSimilarEvent);
-      const originalStart = new Date(mostSimilarEvent.date_interval[0]); // Extract start time
-      const originalEnd = new Date(mostSimilarEvent.date_interval[1]); // Extract end time
+      console.log('Inferred Start:', inferredStart, 'Inferred End:', inferredEnd);
   
-      const inferredStart = new Date(originalStart.getTime() + 7 * 24 * 60 * 60 * 1000); // 1 week later
-      const inferredEnd = new Date(originalEnd.getTime() + 7 * 24 * 60 * 60 * 1000); // Match duration
-
-      console.log('Timestart/end', inferredStart, inferredEnd);
-
-      const similarEvent: CalendarEvent = {
-        id: undefined, // Will be assigned after saving to Supabase
-        user_id: session.user.id,
-        title: `Similar to: ${mostSimilarEvent.title}`,
-        start: inferredStart,
-        end: inferredEnd,
-        extendedProps: {
-          description: mostSimilarEvent.description || '',
-          category: mostSimilarEvent.category || '',
-          completion: false, // Default to not completed
-          priority: mostSimilarEvent.priority || '',
-        },
+      const updatedEvent = {
+        title: originalEvent.title,
+        category: originalEvent.extendedProps.category || '',
+        description: originalEvent.extendedProps.description || '',
+        date_interval: `[${inferredStart.toISOString()}, ${inferredEnd.toISOString()}]`,
+        completion: false, // Default to not completed
+        priority: mostSimilarEvent.priority || '',
       };
   
-      // Step 4: Save the recommended event into `task_log`
-      const { data: newEvent, error: insertError } = await supabase
+      // Step 4: Update the draft event instead of creating a new one
+      const { data: updatedEventData, error: updateError } = await supabase
         .from('task_log')
-        .insert([
-          {
-            user_id: session.user.id,
-            title: similarEvent.title,
-            category: similarEvent.extendedProps.category,
-            description: similarEvent.extendedProps.description,
-            date_interval: `[${inferredStart.toISOString()}, ${inferredEnd.toISOString()}]`,
-            event_creation_time: new Date().toISOString(),
-            completion: similarEvent.extendedProps.completion,
-            priority: similarEvent.extendedProps.priority,
-          },
-        ])
-        .select('task_id'); // Explicitly fetch `task_id`
+        .update(updatedEvent)
+        .eq('task_id', draftTaskId)
+        .select();
   
-      if (insertError) {
-        console.error('Error saving recommended event:', insertError);
-      } else if (newEvent && newEvent.length > 0) {
-        console.log('Recommended event created:', newEvent);
+      if (updateError) {
+        console.error('Error updating the draft event with recommended data:', updateError);
+      } else {
+        console.log('Draft event updated successfully:', updatedEventData);
   
-        const savedEvent: CalendarEvent = {
-          ...similarEvent,
-          id: newEvent[0].task_id, // Assign the ID from Supabase
-        };
-  
-        saveEventsLocally([...events, savedEvent]); // Save to local state
+        // Update state and localStorage
+        //const updatedEventWithId = { ...updatedEvent, id: draftTaskId };
+        //saveEventsLocally([...events, updatedEventWithId]);
+        //setEvents([...events, updatedEventWithId]); // Optional: Force UI refresh if needed
+        
+        const newEventWithId = { ...mostSimilarEvent, id: updatedEventData[0].task_id };
+        // Update state and ensure it synchronizes with localStorage and UI
+        const updatedEvents = [...events, newEventWithId];
+        setEvents(updatedEvents);
+        saveEventsLocally(updatedEvents);
+        
+
+        console.log('Updated events after adding recommended event:', updatedEvents);
+        
       }
-    } catch (error) {
-      console.error('Exception while creating recommended event:', error);
+    } catch (err) {
+      console.error('Error calculating or updating recommended event:', err);
     }
   };
   
+
   // Delete event from supabase and local storage
   const deleteEvent = async (eventId: string | number) => {
     const formattedEventId = typeof eventId === 'string' ? parseInt(eventId) : eventId;

@@ -88,90 +88,105 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-neutral-950 p-6 rounded-lg shadow-lg max-w-md mx-auto"> {/* Added onSubmit here */}
-      <h2 className="text-3xl font-bold text-center mb-6 text-white">{isSignup ? 'Sign Up' : 'Log In'}</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 bg-neutral-950 p-6 rounded-lg shadow-lg max-w-md mx-auto"
+    >
+      <h2 className="text-3xl font-bold text-center mb-6 text-white">
+        {isSignup ? 'Create an Account' : 'Welcome Back'}
+      </h2>
+
+      {errorMessage && (
+        <div className="text-red-500 text-sm font-medium">{errorMessage}</div>
+      )}
 
       {isSignup && (
-        <div className="form-group">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-300">Name:</label>
+        <div>
+          <label htmlFor="name" className="block text-sm text-gray-300 mb-1">
+            Name:
+          </label>
           <input
+            type="text"
             id="name"
             name="name"
-            type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            required
-            className="mt-1 block w-full p-2 bg-gray-800 border border-gray-500 rounded-md text-white"
+            className="w-full p-2 bg-gray-800 text-white border border-gray-500 rounded-md"
           />
         </div>
       )}
 
-      <div className="form-group">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email:</label>
+      <div>
+        <label htmlFor="email" className="block text-sm text-gray-300 mb-1">
+          Email:
+        </label>
         <input
+          type="email"
           id="email"
           name="email"
-          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
-          className="mt-1 block w-full p-2 bg-gray-800 border border-gray-500 rounded-md text-white"
+          className="w-full p-2 bg-gray-800 text-white border border-gray-500 rounded-md"
         />
       </div>
 
-      <div className="form-group">
-        <label htmlFor="password" className="block text-sm font-medium text-gray-300">Password:</label>
+      <div>
+        <label htmlFor="password" className="block text-sm text-gray-300 mb-1">
+          Password:
+        </label>
         <input
+          type="password"
           id="password"
           name="password"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
-          className="mt-1 block w-full p-2 bg-gray-800 border border-gray-500 rounded-md text-white"
+          className="w-full p-2 bg-gray-800 text-white border border-gray-500 rounded-md"
         />
       </div>
 
       {isSignup && (
-        <div className="form-group">
-          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">Confirm Password:</label>
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm text-gray-300 mb-1"
+          >
+            Confirm Password:
+          </label>
           <input
-            id="confirm-password"
-            name="confirm-password"
             type="password"
+            id="confirmPassword"
+            name="confirmPassword"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="mt-1 block w-full p-2 bg-gray-800 border border-gray-500 rounded-md text-white"
+            className="w-full p-2 bg-gray-800 text-white border border-gray-500 rounded-md"
           />
-          {errorMessage && <p className="mt-2 text-sm text-red-500 font-medium">{errorMessage}</p>}
         </div>
       )}
 
-      <div className="flex justify-between items-center">
-        <button type="submit" className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-md transition duration-200">
-          {isSignup ? 'Sign Up' : 'Log In'}
-        </button>
+      <button
+        type="submit"
+        className="w-full bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-md transition duration-200"
+      >
+        {isSignup ? 'Sign Up' : 'Log In'}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setIsSignup(!isSignup)}
+        className="w-full mt-4 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md transition duration-200"
+      >
+        {isSignup ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
+      </button>
+
+      <div className="text-center mt-4">
         <button
           type="button"
-          onClick={() => setIsSignup(!isSignup)}
-          className="w-full sm:w-auto mt-4 sm:mt-0 sm:ml-2 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md transition duration-200"
+          onClick={handleForgotPassword}
+          className="text-sm text-gray-400 hover:text-gray-300"
         >
-          {isSignup ? 'Switch to Log In' : 'Switch to Sign Up'}
+          Forgot Password?
         </button>
       </div>
-
-      {!isSignup && (
-        <div className="text-center mt-4">
-          <button
-            type="button"
-            onClick={handleForgotPassword}
-            className="text-sm text-gray-400 hover:text-gray-300 transition duration-200"
-          >
-            Forgot Password?
-          </button>
-        </div>
-      )}
 
       <div className="text-center mt-6">
         <button

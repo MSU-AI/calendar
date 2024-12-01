@@ -1,4 +1,3 @@
-
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid'; // Month view
 import timeGridPlugin from '@fullcalendar/timegrid'; // Week and Day views
@@ -60,7 +59,10 @@ const CalendarComponent = () => {
     return events; // Show all events when showAllEvents is true
   };
 
-  
+   // Ensure the component reacts to event updates
+   useEffect(() => {
+    console.log('Events updated, re-rendering calendar:', events);
+  }, [events]);
 
   useEffect(() => {
     //console.log("CalendarComponent useEffect triggered");
@@ -90,7 +92,6 @@ const CalendarComponent = () => {
 
   const handleSaveEvent = async (newEvent: any) => {
     const createFormattedEvent = (event: any) => ({
-      id: `${Date.now()}-${Math.floor(Math.random() * 100000)}`,
       title: event.title,
       start: new Date(event.start),
       end: event.end ? new Date(event.end) : new Date(event.start),
@@ -310,7 +311,9 @@ const CalendarComponent = () => {
               >
                 Settings
               </button>
+
               {/* Dropdown Menu */}
+
               {showSettingsDropdown && (
                 <div id='dropdown-menu-settings' className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
                   
@@ -456,25 +459,25 @@ const CalendarComponent = () => {
   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
     <div
       id="event-details-tag-2"
-      className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md text-white space-y-4"
+      className="bg-neutral-950 rounded-lg shadow-lg p-6 w-full max-w-md text-white space-y-4 relative"
     >
       {/* Close Button */}
       <button
-          
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition duration-200"
-          aria-label="Close"
+        onClick={closeEventDescription}
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition duration-200"
+        aria-label="Close"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="w-6 h-6"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
 
       {/* Event Details */}
       <div className="space-y-2">
@@ -533,6 +536,7 @@ const CalendarComponent = () => {
     </div>
   </div>
 )}
+
 
 
 
@@ -598,6 +602,9 @@ const CalendarComponent = () => {
                 Today
               </button>
             </div>
+            {/* Upcoming Events */}
+            {/* If the events are recommended, show them with a special highlighted color like blue dot next to it */}
+            
             <ul className="task-list">
               {upcomingEvents.map((event, index) => (
                 <li 
@@ -610,6 +617,7 @@ const CalendarComponent = () => {
                 </li>
               ))}
             </ul>
+
           </div>
           <div className="calendar-container">
             <div id="calendar-class-ui">
