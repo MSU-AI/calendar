@@ -54,6 +54,8 @@ const EventForm: React.FC<EventFormProps> = ({ onSave, onClose, initialData , is
     };
   }, []);
 
+  // make handler for updating changes on this form and save it to the database
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({ title, description, start, end, category, completion, isRecommend });
