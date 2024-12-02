@@ -121,7 +121,9 @@ export async function googleAuth() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`, // Ensure this is set
+      //redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`, // Ensure this is set
+      redirectTo: `https://potentiallycalendar-fc9tl7fms-nolanschroeders-projects.vercel.app/auth/callback`,
+
     },
   });
 
